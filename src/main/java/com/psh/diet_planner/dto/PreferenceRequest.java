@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class PreferenceRequest {
     private String userId;
-    private String recipeId;
+    private String recipeName;
     private String ingredientName;
     private String reason;
 }

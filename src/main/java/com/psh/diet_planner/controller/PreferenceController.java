@@ -24,7 +24,7 @@ public class PreferenceController {
     @PostMapping("/recipes/like")
     public ApiResponse<Void> likeRecipe(@RequestBody PreferenceRequest request) {
         try {
-            preferenceService.likeRecipe(request.getUserId(), request.getRecipeId());
+            preferenceService.likeRecipe(request.getUserId(), request.getRecipeName());
             return ApiResponse.success(null, "已收藏/喜欢该菜谱");
         } catch (Exception e) {
             return ApiResponse.error("操作失败: " + e.getMessage());
@@ -34,7 +34,7 @@ public class PreferenceController {
     @PostMapping("/recipes/dislike")
     public ApiResponse<Void> dislikeRecipe(@RequestBody PreferenceRequest request) {
         try {
-            preferenceService.dislikeRecipe(request.getUserId(), request.getRecipeId());
+            preferenceService.dislikeRecipe(request.getUserId(), request.getRecipeName());
             return ApiResponse.success(null, "已标记不感兴趣");
         } catch (Exception e) {
             return ApiResponse.error("操作失败: " + e.getMessage());

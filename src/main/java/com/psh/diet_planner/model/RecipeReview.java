@@ -19,7 +19,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "recipe_reviews", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"user_id", "recipe_id"})
+    @UniqueConstraint(columnNames = {"user_id", "recipe_name"})
 }, indexes = {
     @Index(name = "idx_recipe_review_user", columnList = "user_id")
 })
@@ -32,10 +32,7 @@ public class RecipeReview {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "recipe_id", nullable = false, length = 128)
-    private String recipeId;
-
-    @Column(name = "recipe_name", length = 255)
+    @Column(name = "recipe_name", nullable = false, length = 255)
     private String recipeName;
 
     /** 口味评分 1-5 */

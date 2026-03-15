@@ -22,8 +22,8 @@ public interface ReviewService {
     RecipeReviewResponse updateRecipeReview(Long reviewId, RecipeReviewRequest request);
     void deleteRecipeReview(Long reviewId);
     List<RecipeReviewResponse> getRecipeReviewsByUser(Long userId);
-    List<RecipeReviewResponse> getRecipeReviewsByRecipe(String recipeId);
-    RecipeReviewResponse getUserRecipeReview(Long userId, String recipeId);
+    List<RecipeReviewResponse> getRecipeReviewsByRecipe(String recipeName);
+    RecipeReviewResponse getUserRecipeReview(Long userId, String recipeName);
 
     // ========== 登录态同步：加载用户历史记忆 ==========
     UserMemoryResponse loadUserMemory(Long userId);

@@ -119,14 +119,14 @@ public class FeedbackController {
     }
 
     @GetMapping("/recipe/item")
-    public ApiResponse<List<RecipeReviewResponse>> getRecipeReviewsByRecipe(@RequestParam String recipeId) {
-        return ApiResponse.success(reviewService.getRecipeReviewsByRecipe(recipeId), "获取菜谱评价成功");
+    public ApiResponse<List<RecipeReviewResponse>> getRecipeReviewsByRecipe(@RequestParam String recipeName) {
+        return ApiResponse.success(reviewService.getRecipeReviewsByRecipe(recipeName), "获取菜谱评价成功");
     }
 
     @GetMapping("/recipe/detail")
     public ApiResponse<RecipeReviewResponse> getUserRecipeReview(@RequestParam Long userId,
-                                                                 @RequestParam String recipeId) {
-        RecipeReviewResponse resp = reviewService.getUserRecipeReview(userId, recipeId);
+                                                                 @RequestParam String recipeName) {
+        RecipeReviewResponse resp = reviewService.getUserRecipeReview(userId, recipeName);
         if (resp != null) {
             return ApiResponse.success(resp, "获取评价成功");
         }

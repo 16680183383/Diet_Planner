@@ -7,6 +7,7 @@ public class ApiResponse<T> {
     private T data;
     private String message;
     private boolean success;
+    private String aiAnalysis;
     
     public ApiResponse() {}
     
@@ -18,6 +19,12 @@ public class ApiResponse<T> {
     
     public static <T> ApiResponse<T> success(T data, String message) {
         return new ApiResponse<>(data, message, true);
+    }
+
+    public static <T> ApiResponse<T> successWithAi(T data, String message, String aiAnalysis) {
+        ApiResponse<T> r = new ApiResponse<>(data, message, true);
+        r.setAiAnalysis(aiAnalysis);
+        return r;
     }
     
     public static <T> ApiResponse<T> error(String message) {

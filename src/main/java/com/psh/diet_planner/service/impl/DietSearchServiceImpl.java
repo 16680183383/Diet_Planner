@@ -16,8 +16,11 @@ import com.psh.diet_planner.model.SearchIntent;
 import com.psh.diet_planner.service.DietSearchService;
 import com.psh.diet_planner.service.ReviewService;
 import com.psh.diet_planner.service.support.mcp.Neo4jMcpAdapter;
+
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -48,8 +51,7 @@ public class DietSearchServiceImpl implements DietSearchService, DisposableBean 
         Map<String, Object> embeddingInfo = loadEmbeddingOrThrow(request.getFoodName());
         ensureEmbedding(intent, embeddingInfo, true);
         List<DietSearchResponse> results = searchByIntent(request.getFoodName(), intent, limit);
-        UserMemoryContext memCtx = loadMemoryContext(request.getUserId());
-        attachAiAdvice(request.getFoodName(), intent, request.isIncludeAiAdvice(), results, memCtx);
+        // 不在此处把 AI 建议注入到每条结果，改为由 Controller 在顶层返回单一 aiAnalysis 字段
         return results;
     }
 
@@ -193,34 +195,81 @@ public class DietSearchServiceImpl implements DietSearchService, DisposableBean 
     }
 
     private List<DietSearchResponse> searchByIntent(String foodName, SearchIntent intent, int limit) {
-        List<Map<String, Object>> rows = switch (intent) {
-            case COMP -> neo4jMcpAdapter.findFoodSimilarityByIndex(foodName, "idx_food_comp", limit);
-            case INCOMP -> neo4jMcpAdapter.findFoodSimilarityByIndex(foodName, "idx_food_incomp", limit);
-            case OVERLAP -> neo4jMcpAdapter.findFoodSimilarityByIndex(foodName, "idx_food_overlap", limit);
-            case RECIPE, ALL -> neo4jMcpAdapter.findFoodSimilarityByIndex(foodName, "idx_recipe_rfr", limit);
-        };
-        return toResponses(foodName, rows);
+        try {
+            List<Map<String, Object>> rows = switch (intent) {
+                case COMP -> neo4jMcpAdapter.findFoodSimilarityByIndex(foodName, "idx_food_comp", limit);
+                case INCOMP -> neo4jMcpAdapter.findFoodSimilarityByIndex(foodName, "idx_food_incomp", limit);
+                case OVERLAP -> neo4jMcpAdapter.findFoodSimilarityByIndex(foodName, "idx_food_overlap", limit);
+                case RECIPE, ALL -> neo4jMcpAdapter.findFoodSimilarityByIndex(foodName, "idx_recipe_rfr", limit);
+            };
+            return toResponses(foodName, rows);
+        } catch (CustomException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            String detail = extractExceptionDetail(ex);
+            String lower = detail.toLowerCase();
+            if (lower.contains("vector") || lower.contains("index") || lower.contains("idx_food_") || lower.contains("idx_recipe_rfr")) {
+                throw new CustomException(400, "向量索引未就绪，请先完成训练并构建索引");
+            }
+            if (detail.contains("调用 MCP 工具失败") || lower.contains("mcp")) {
+                throw new CustomException(503, "图谱检索服务暂不可用，请确认 Neo4j 与 MCP 服务已启动");
+            }
+            throw new CustomException(500, "饮食分析失败: " + detail);
+        }
+    }
+
+    private String extractExceptionDetail(Throwable ex) {
+        StringBuilder sb = new StringBuilder();
+        Throwable cur = ex;
+        int depth = 0;
+        while (cur != null && depth < 6) {
+            String msg = cur.getMessage();
+            if (msg != null && !msg.isBlank()) {
+                if (sb.length() > 0) {
+                    sb.append(" | caused by: ");
+                }
+                sb.append(msg);
+            }
+            cur = cur.getCause();
+            depth++;
+        }
+        return Objects.toString(sb, "");
     }
 
     private List<DietSearchResponse> toResponses(String sourceFood, List<Map<String, Object>> rows) {
         if (rows == null || rows.isEmpty()) {
             return List.of();
         }
-        return rows.stream()
-            .map(row -> DietSearchResponse.builder()
-                .name(asString(row.get("name")))
+        // 去重：按 name 保留首次出现的顺序
+        Map<String, DietSearchResponse> map = new LinkedHashMap<>();
+        for (Map<String, Object> row : rows) {
+            String name = asString(row.get("name"));
+            if (name == null || name.isBlank()) continue;
+            if (map.containsKey(name)) continue;
+            DietSearchResponse resp = DietSearchResponse.builder()
+                .name(name)
                 .similarityScore(asDouble(row.get("score")))
-                .knownRelations(fetchRelations(sourceFood, asString(row.get("name"))))
-                .build())
-            .collect(Collectors.toList());
+                .knownRelations(fetchRelations(sourceFood, name))
+                .build();
+            map.put(name, resp);
+        }
+        if (map.size() < rows.size()) {
+            log.info("搜索结果包含重复项，原始数量={} 去重后数量={} source={}", rows.size(), map.size(), sourceFood);
+        }
+        return map.values().stream().collect(Collectors.toList());
     }
 
     private List<String> fetchRelations(String sourceFood, String targetFood) {
-        List<String> relations = neo4jMcpAdapter.findRelationsBetween(sourceFood, targetFood);
-        if (relations == null || relations.isEmpty()) {
+        try {
+            List<String> relations = neo4jMcpAdapter.findRelationsBetween(sourceFood, targetFood);
+            if (relations == null || relations.isEmpty()) {
+                return List.of();
+            }
+            return relations.stream().filter(item -> item != null && !item.isBlank()).distinct().toList();
+        } catch (Exception ex) {
+            log.warn("查询已知关系失败 source={} target={}: {}", sourceFood, targetFood, ex.getMessage());
             return List.of();
         }
-        return relations.stream().filter(item -> item != null && !item.isBlank()).distinct().toList();
     }
 
     private void attachAiAdvice(String foodName, SearchIntent intent, boolean includeAiAdvice,
@@ -230,6 +279,20 @@ public class DietSearchServiceImpl implements DietSearchService, DisposableBean 
         }
         String advice = recipeAiService.generateDietAdvice(foodName, intent, results, memCtx);
         results.forEach(resp -> resp.setAiAnalysis(advice));
+    }
+
+    @Override
+    public String generateAiAdvice(String foodName, SearchIntent intent, List<DietSearchResponse> results, Long userId) {
+        if (foodName == null || foodName.isBlank() || results == null || results.isEmpty()) {
+            return null;
+        }
+        UserMemoryContext memCtx = loadMemoryContext(userId);
+        try {
+            return recipeAiService.generateDietAdvice(foodName, intent, results, memCtx);
+        } catch (Exception ex) {
+            log.warn("生成 AI 建议失败 food={} userId={} : {}", foodName, userId, ex.getMessage());
+            return null;
+        }
     }
 
     private UserMemoryContext loadMemoryContext(Long userId) {

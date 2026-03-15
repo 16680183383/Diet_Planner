@@ -17,6 +17,8 @@ public interface Neo4jMcpAdapter {
 
     int executeBatchWrites(List<CypherStatement> statements);
 
+    Map<String, Object> healthCheck();
+
     List<Map<String, Object>> findSemanticSubstitutes(String foodName, int limit);
 
     List<Map<String, Object>> findPairingCandidates(String foodName, int limit);
@@ -36,6 +38,8 @@ public interface Neo4jMcpAdapter {
     List<Map<String, Object>> findAllFoodMetapathEmbeddings();
 
     List<Map<String, Object>> findNeighborMetapathEmbeddings(String foodName, String relationType);
+
+    List<Map<String, Object>> findRecipeNeighborEmbeddings(String foodName);
 
     Map<String, Object> loadFoodEmbeddings(String foodName);
 

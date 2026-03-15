@@ -27,4 +27,5 @@ public class McpNeo4jProperties {
     private String toolCypherQuery = "neo4j.cypher.query";
     private String toolCypherWrite = "neo4j.cypher.write";
     private String toolCypherTransaction = "neo4j.cypher.transaction";
+    private String toolDietDispatch = "diet.neo4j.dispatch";
 }

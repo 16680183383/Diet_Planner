@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 public interface PreferenceService {
-    void likeRecipe(String userId, String recipeId);
-    void dislikeRecipe(String userId, String recipeId);
+    void likeRecipe(String userId, String recipeName);
+    void dislikeRecipe(String userId, String recipeName);
     void favoriteIngredient(String userId, String ingredientName);
     void dislikeIngredient(String userId, String ingredientName, String reason);
 

@@ -33,8 +33,8 @@ public class RecipePreference {
     @Column(name = "user_id", nullable = false, length = 64)
     private String userId;
 
-    @Column(name = "recipe_id", nullable = false)
-    private String recipeId;
+    @Column(name = "recipe_name", nullable = false, length = 255)
+    private String recipeName;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 32)

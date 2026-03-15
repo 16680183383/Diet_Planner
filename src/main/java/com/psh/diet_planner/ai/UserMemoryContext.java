@@ -175,11 +175,11 @@ public class UserMemoryContext {
         }
         List<String> liked = prefs.stream()
                 .filter(p -> "LIKE".equalsIgnoreCase(p.getPreference()))
-                .map(UserMemoryResponse.RecipePrefItem::getRecipeId)
+                .map(UserMemoryResponse.RecipePrefItem::getRecipeName)
                 .collect(Collectors.toList());
         List<String> disliked = prefs.stream()
                 .filter(p -> "NOT_INTERESTED".equalsIgnoreCase(p.getPreference()))
-                .map(UserMemoryResponse.RecipePrefItem::getRecipeId)
+                .map(UserMemoryResponse.RecipePrefItem::getRecipeName)
                 .collect(Collectors.toList());
 
         if (!liked.isEmpty()) {

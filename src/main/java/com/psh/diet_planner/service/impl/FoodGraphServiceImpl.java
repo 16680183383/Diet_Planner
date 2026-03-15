@@ -136,34 +136,38 @@ public class FoodGraphServiceImpl implements FoodGraphService {
 
     @Override
     public SmartMealPlanResponse generateMealPlan(SmartMealPlanRequest request) {
-        String normalized = normalizeFoodName(request.getFoodName());
-        ensureFoodExists(normalized);
-        int pairingLimit = request.getPairingLimit() != null && request.getPairingLimit() > 1
-            ? request.getPairingLimit()
-            : DEFAULT_MEAL_PAIRINGS;
-        List<String> rawPairings = neo4jMcpAdapter.findSmartPairings(normalized, pairingLimit * 2);
-        List<String> pairings = (rawPairings == null ? List.<String>of() : rawPairings)
-            .stream()
-            .filter(name -> name != null && !name.equalsIgnoreCase(normalized))
-            .distinct()
-            .limit(pairingLimit)
-            .toList();
-        if (pairings.isEmpty()) {
-            throw new CustomException(404, "GraphSAGE 暂无法给出搭配建议");
+        try {
+            String normalized = normalizeFoodName(request.getFoodName());
+            ensureFoodExists(normalized);
+            int pairingLimit = request.getPairingLimit() != null && request.getPairingLimit() > 1
+                ? request.getPairingLimit()
+                : DEFAULT_MEAL_PAIRINGS;
+            List<String> rawPairings = neo4jMcpAdapter.findSmartPairings(normalized, pairingLimit * 2);
+            List<String> pairings = (rawPairings == null ? List.<String>of() : rawPairings)
+                .stream()
+                .filter(name -> name != null && !name.equalsIgnoreCase(normalized))
+                .distinct()
+                .limit(pairingLimit)
+                .toList();
+            if (pairings.isEmpty()) {
+                throw new CustomException(404, "GraphSAGE 暂无法给出搭配建议");
+            }
+            List<String> allIngredients = new ArrayList<>();
+            allIngredients.add(normalized);
+            allIngredients.addAll(pairings);
+            List<String> recipes = neo4jMcpAdapter.findRecipesByIngredients(allIngredients, DEFAULT_RECIPE_LIMIT);
+            List<String> safeRecipes = recipes == null ? List.of() : recipes;
+            UserMemoryContext memCtx = loadMemoryContext(request.getUserId());
+            String advice = callMealPlanModel(normalized, pairings, safeRecipes, memCtx);
+            return SmartMealPlanResponse.builder()
+                .mainIngredient(normalized)
+                .recommendedPairings(pairings)
+                .suggestedRecipes(safeRecipes)
+                .nutritionExpertAdvice(advice)
+                .build();
+        } catch (IllegalStateException ex) {
+            throw new CustomException(500, "MCP工具调用失败: " + ex.getMessage());
         }
-        List<String> allIngredients = new ArrayList<>();
-        allIngredients.add(normalized);
-        allIngredients.addAll(pairings);
-        List<String> recipes = neo4jMcpAdapter.findRecipesByIngredients(allIngredients, DEFAULT_RECIPE_LIMIT);
-        List<String> safeRecipes = recipes == null ? List.of() : recipes;
-        UserMemoryContext memCtx = loadMemoryContext(request.getUserId());
-        String advice = callMealPlanModel(normalized, pairings, safeRecipes, memCtx);
-        return SmartMealPlanResponse.builder()
-            .mainIngredient(normalized)
-            .recommendedPairings(pairings)
-            .suggestedRecipes(safeRecipes)
-            .nutritionExpertAdvice(advice)
-            .build();
     }
 
     @Override

@@ -93,48 +93,26 @@ public class DefaultNeo4jMcpAdapter implements Neo4jMcpAdapter {
     }
 
     @Override
+    public Map<String, Object> healthCheck() {
+        return callToolForPayload(
+            properties.getToolDietDispatch(),
+            Map.of("op", "healthCheck", "args", Map.of())
+        );
+    }
+
+    @Override
     public List<Map<String, Object>> findSemanticSubstitutes(String foodName, int limit) {
-        String query = """
-            MATCH (f:Food {name: $foodName})
-            CALL db.index.vector.queryNodes('food_sage_embeddings', $limit + 1, f.sage_embedding)
-            YIELD node, score
-            WHERE node.name <> $foodName
-            RETURN node.name AS name, score
-            LIMIT $limit
-            """;
-        return executeCypher(query, Map.of("foodName", foodName, "limit", limit));
+        return callRows("findSemanticSubstitutes", Map.of("foodName", foodName, "limit", limit));
     }
 
     @Override
     public List<Map<String, Object>> findPairingCandidates(String foodName, int limit) {
-        String query = """
-            MATCH (f1:Food {name: $foodName})
-            CALL db.index.vector.queryNodes('food_sage_embeddings', 50, f1.sage_embedding)
-            YIELD node AS f2, score AS sim
-            WHERE f2.name <> $foodName AND sim > 0
-            OPTIONAL MATCH (f1)-[r:COMPLEMENTARY]-(f2)
-            ORDER BY CASE WHEN r IS NOT NULL THEN 1 ELSE 2 END ASC, sim DESC
-            RETURN f2.name AS name,
-                   sim AS similarityScore,
-                   CASE WHEN r IS NOT NULL THEN '专家推荐(已有关系)' ELSE 'AI预测(隐藏搭档)' END AS reason,
-                   r IS NOT NULL AS expertLinked
-            LIMIT $limit
-            """;
-        return executeCypher(query, Map.of("foodName", foodName, "limit", limit));
+        return callRows("findPairingCandidates", Map.of("foodName", foodName, "limit", limit));
     }
 
     @Override
     public List<String> findSmartPairings(String foodName, int limit) {
-        String query = """
-            MATCH (f1:Food {name: $foodName})
-            CALL db.index.vector.queryNodes('food_sage_embeddings', 100, f1.sage_embedding)
-            YIELD node AS f2, score AS sim
-            WHERE f2.name <> $foodName AND sim > 0.85
-              AND NOT (f1)-[:COMPLEMENTARY]-(f2)
-            RETURN f2.name AS name
-            LIMIT $limit
-            """;
-        return executeCypher(query, Map.of("foodName", foodName, "limit", limit)).stream()
+        return callRows("findSmartPairings", Map.of("foodName", foodName, "limit", limit)).stream()
             .map(row -> (String) row.get("name"))
             .filter(StringUtils::hasText)
             .toList();
@@ -142,13 +120,7 @@ public class DefaultNeo4jMcpAdapter implements Neo4jMcpAdapter {
 
     @Override
     public List<String> findRecipesByIngredients(List<String> ingredients, int limit) {
-        String query = """
-            MATCH (r:Recipe)
-            WHERE ALL(ingredient IN $ingredients WHERE (r)-[:CONTAINS]->(:Food {name: ingredient}))
-            RETURN r.name AS name
-            LIMIT $limit
-            """;
-        return executeCypher(query, Map.of("ingredients", ingredients, "limit", limit)).stream()
+        return callRows("findRecipesByIngredients", Map.of("ingredients", ingredients, "limit", limit)).stream()
             .map(row -> (String) row.get("name"))
             .filter(StringUtils::hasText)
             .toList();
@@ -156,12 +128,7 @@ public class DefaultNeo4jMcpAdapter implements Neo4jMcpAdapter {
 
     @Override
     public List<String> checkIncompatibilities(List<String> foodNames) {
-        String query = """
-            MATCH (f:Food)-[r:INCOMPATIBLE]-(target:Food)
-            WHERE f.name IN $foodNames AND target.name IN $foodNames AND f.name < target.name
-            RETURN f.name + '与' + target.name + '相克：' + coalesce(r.reason, '暂无具体原因') AS warning
-            """;
-        return executeCypher(query, Map.of("foodNames", foodNames)).stream()
+        return callRows("checkIncompatibilities", Map.of("foodNames", foodNames)).stream()
             .map(row -> (String) row.get("warning"))
             .filter(StringUtils::hasText)
             .toList();
@@ -169,18 +136,12 @@ public class DefaultNeo4jMcpAdapter implements Neo4jMcpAdapter {
 
     @Override
     public void saveSageEmbedding(String foodName, List<Double> embedding) {
-        executeWrite(
-            "MATCH (f:Food {name: $name}) SET f.sage_embedding = $emb",
-            Map.of("name", foodName, "emb", embedding)
-        );
+        callUpdated("saveSageEmbedding", Map.of("foodName", foodName, "embedding", embedding));
     }
 
     @Override
     public List<String> findFoodsMissingSageEmbedding() {
-        return executeCypher(
-            "MATCH (f:Food) WHERE f.sage_embedding IS NULL AND f.name IS NOT NULL RETURN f.name AS name",
-            Map.of()
-        ).stream()
+        return callRows("findFoodsMissingSageEmbedding", Map.of()).stream()
             .map(row -> (String) row.get("name"))
             .filter(StringUtils::hasText)
             .toList();
@@ -188,31 +149,13 @@ public class DefaultNeo4jMcpAdapter implements Neo4jMcpAdapter {
 
     @Override
     public Map<String, Object> findFoodMetapathEmbeddings(String foodName) {
-        List<Map<String, Object>> rows = executeCypher(
-            """
-            MATCH (f:Food {name: $name})
-            RETURN f.comp_embedding AS comp,
-                   f.incomp_embedding AS incomp,
-                   f.overlap_embedding AS overlap,
-                   f.rfr_embedding AS rfr
-            """,
-            Map.of("name", foodName)
-        );
+        List<Map<String, Object>> rows = callRows("findFoodMetapathEmbeddings", Map.of("foodName", foodName));
         return rows.isEmpty() ? Map.of() : rows.get(0);
     }
 
     @Override
     public List<Map<String, Object>> findAllFoodMetapathEmbeddings() {
-        return executeCypher(
-            """
-            MATCH (f:Food)
-            RETURN f.comp_embedding AS comp,
-                   f.incomp_embedding AS incomp,
-                   f.overlap_embedding AS overlap,
-                   f.rfr_embedding AS rfr
-            """,
-            Map.of()
-        );
+        return callRows("findAllFoodMetapathEmbeddings", Map.of());
     }
 
     @Override
@@ -220,102 +163,43 @@ public class DefaultNeo4jMcpAdapter implements Neo4jMcpAdapter {
         if (!ALLOWED_REL_TYPES.contains(relationType)) {
             throw new IllegalArgumentException("不支持的关系类型: " + relationType);
         }
-        String query = """
-            MATCH (f:Food {name: $name})-[:__REL__]->(n:Food)
-            RETURN n.comp_embedding AS comp,
-                   n.incomp_embedding AS incomp,
-                   n.overlap_embedding AS overlap,
-                   n.rfr_embedding AS rfr
-            """.replace("__REL__", relationType);
-        return executeCypher(query, Map.of("name", foodName));
+        return callRows("findNeighborMetapathEmbeddings", Map.of("foodName", foodName, "relationType", relationType));
+    }
+
+    @Override
+    public List<Map<String, Object>> findRecipeNeighborEmbeddings(String foodName) {
+        return callRows("findRecipeNeighborEmbeddings", Map.of("foodName", foodName));
     }
 
     @Override
     public Map<String, Object> loadFoodEmbeddings(String foodName) {
-        List<Map<String, Object>> rows = executeCypher(
-            """
-            MATCH (f:Food {name: $name})
-            RETURN f.name AS name,
-                   size(coalesce(f.rfr_embedding, [])) > 0 AS hasEmbedding,
-                   size(coalesce(f.comp_embedding, [])) > 0 AS hasCompEmbedding,
-                   size(coalesce(f.incomp_embedding, [])) > 0 AS hasIncompEmbedding,
-                   size(coalesce(f.overlap_embedding, [])) > 0 AS hasOverlapEmbedding
-            LIMIT 1
-            """,
-            Map.of("name", foodName)
-        );
+        List<Map<String, Object>> rows = callRows("loadFoodEmbeddings", Map.of("foodName", foodName));
         return rows.isEmpty() ? Map.of() : rows.get(0);
     }
 
     @Override
     public List<Map<String, Object>> findFoodSimilarityByIndex(String foodName, String indexName, int limit) {
-        String query = """
-            MATCH (f:Food {name: $name})
-            CALL db.index.vector.queryNodes($indexName, $limit,
-                CASE
-                    WHEN $indexName = 'idx_food_comp' THEN f.comp_embedding
-                    WHEN $indexName = 'idx_food_incomp' THEN f.incomp_embedding
-                    WHEN $indexName = 'idx_food_overlap' THEN f.overlap_embedding
-                    ELSE f.rfr_embedding
-                END)
-            YIELD node, score
-            WHERE node <> f
-            RETURN node.name AS name, toFloat(score) AS score
-            ORDER BY score DESC
-            """;
-        return executeCypher(query, Map.of("name", foodName, "indexName", indexName, "limit", limit));
+        return callRows("findFoodSimilarityByIndex", Map.of(
+            "foodName", foodName,
+            "indexName", indexName,
+            "limit", limit
+        ));
     }
 
     @Override
     public List<RelationExploreDTO> exploreFoodRelations(String foodName, String indexName, String relationType, int limit) {
-        String query = """
-            MATCH (target:Food {name: $name})
-            CALL db.index.vector.queryNodes($indexName, $limit,
-                CASE
-                    WHEN $indexName = 'idx_food_comp' THEN target.comp_embedding
-                    WHEN $indexName = 'idx_food_incomp' THEN target.incomp_embedding
-                    WHEN $indexName = 'idx_food_overlap' THEN target.overlap_embedding
-                    ELSE target.rfr_embedding
-                END)
-            YIELD node, score
-            WHERE node <> target
-            OPTIONAL MATCH (target)-[rel]-(node)
-            WHERE $relationType = 'ANY' OR type(rel) = $relationType
-            OPTIONAL MATCH (node)<-[:CONTAINS]-(recipe:Recipe)
-            RETURN coalesce(type(rel), $defaultType) AS relationType,
-                   node.name AS target,
-                   toFloat(score) AS score,
-                   collect(DISTINCT recipe.name) AS relatedRecipes
-            ORDER BY score DESC
-            """;
-
-        String defaultType = switch (relationType) {
-            case "COMPLEMENTARY" -> "COMP_VECTOR";
-            case "INCOMPATIBLE" -> "INCOMP_VECTOR";
-            case "OVERLAP" -> "OVERLAP_VECTOR";
-            default -> "GENERAL_VECTOR";
-        };
-
-        List<Map<String, Object>> rows = executeCypher(query, Map.of(
-            "name", foodName,
+        List<Map<String, Object>> rows = callRows("exploreFoodRelations", Map.of(
+            "foodName", foodName,
             "indexName", indexName,
-            "limit", limit,
             "relationType", relationType,
-            "defaultType", defaultType
+            "limit", limit
         ));
-
         return rows.stream().map(this::toRelationExploreDto).toList();
     }
 
     @Override
     public List<String> findRelationsBetween(String sourceFood, String targetFood) {
-        return executeCypher(
-            """
-            MATCH (f1:Food {name: $source})-[r:COMPLEMENTARY|INCOMPATIBLE|OVERLAP]-(f2:Food {name: $target})
-            RETURN DISTINCT type(r) AS relation
-            """,
-            Map.of("source", sourceFood, "target", targetFood)
-        ).stream()
+        return callRows("findRelationsBetween", Map.of("sourceFood", sourceFood, "targetFood", targetFood)).stream()
             .map(row -> asString(row.get("relation")))
             .filter(StringUtils::hasText)
             .distinct()
@@ -324,108 +208,34 @@ public class DefaultNeo4jMcpAdapter implements Neo4jMcpAdapter {
 
     @Override
     public List<Map<String, Object>> findSimilarRecipesByName(String recipeName, int limit) {
-        return executeCypher(
-            """
-            MATCH (r:Recipe {name: $name})
-            CALL db.index.vector.queryNodes('idx_recipe_rfr', $limit, r.rfr_embedding)
-            YIELD node, score
-            RETURN elementId(node) AS recipeId,
-                   node.name AS name,
-                   CASE WHEN node.steps IS NULL THEN '' ELSE node.steps END AS steps,
-                   toFloat(score) AS score
-            """,
-            Map.of("name", recipeName, "limit", limit)
-        );
+        return callRows("findSimilarRecipesByName", Map.of("recipeName", recipeName, "limit", limit));
     }
 
     @Override
     public List<Recipe> recommendPathBasedRecipes(String userId, int limit) {
-        List<Map<String, Object>> rows = executeCypher(
-            """
-            MATCH (u:User {id: $userId})
-            MATCH (u)-[:LIKES]->(:Recipe)-[:CONTAINS]->(i:Food)
-            WITH u, i, count(i) AS ingredient_weight
-            MATCH (r2:Recipe)-[:CONTAINS]->(i)
-            WHERE NOT (u)-[:LIKES]->(r2)
-              AND NOT (u)-[:NOT_INTERESTED]->(r2)
-              AND NOT EXISTS {
-                    MATCH (u)-[:DISLIKES]->(:Food)<-[:CONTAINS]-(r2)
-              }
-            WITH r2, sum(ingredient_weight) AS score
-            RETURN elementId(r2) AS id,
-                   r2.name AS name,
-                   r2.ingredients AS ingredients,
-                   r2.detailedIngredients AS detailedIngredients,
-                   r2.steps AS steps
-            ORDER BY score DESC
-            LIMIT $limit
-            """,
-            Map.of("userId", userId, "limit", limit)
-        );
+        List<Map<String, Object>> rows = callRows("recommendPathBasedRecipes", Map.of("userId", userId, "limit", limit));
         return rows.stream().map(this::toRecipe).toList();
     }
 
     @Override
     public List<Recipe> recommendEmbeddingBasedRecipes(String userId, int limit, int searchLimit) {
-        List<Map<String, Object>> rows = executeCypher(
-            """
-            MATCH (u:User {id: $userId})-[:LIKES]->(r:Recipe)
-            WHERE r.rfr_embedding IS NOT NULL
-            WITH u, r ORDER BY coalesce(r.timestamp, 0) DESC LIMIT 5
-            CALL db.index.vector.queryNodes('recipe_vector_index', $searchLimit, r.rfr_embedding)
-            YIELD node, score
-            WITH DISTINCT u, node, max(score) AS maxScore
-            WHERE NOT (u)-[:LIKES]->(node)
-              AND NOT (u)-[:NOT_INTERESTED]->(node)
-              AND NOT EXISTS {
-                   MATCH (u)-[:DISLIKES]->(:Food)<-[:CONTAINS]-(node)
-              }
-            RETURN elementId(node) AS id,
-                   node.name AS name,
-                   node.ingredients AS ingredients,
-                   node.detailedIngredients AS detailedIngredients,
-                   node.steps AS steps
-            ORDER BY maxScore DESC
-            LIMIT $limit
-            """,
-            Map.of("userId", userId, "limit", limit, "searchLimit", searchLimit)
-        );
+        List<Map<String, Object>> rows = callRows("recommendEmbeddingBasedRecipes", Map.of(
+            "userId", userId,
+            "limit", limit,
+            "searchLimit", searchLimit
+        ));
         return rows.stream().map(this::toRecipe).toList();
     }
 
     @Override
     public List<Recipe> searchRecipesByName(String keyword) {
-        List<Map<String, Object>> rows = executeCypher(
-            """
-            MATCH (r:Recipe)
-            WHERE toLower(r.name) CONTAINS toLower($keyword)
-            RETURN elementId(r) AS id,
-                   r.name AS name,
-                   r.ingredients AS ingredients,
-                   r.detailedIngredients AS detailedIngredients,
-                   r.steps AS steps
-            ORDER BY r.name
-            """,
-            Map.of("keyword", keyword)
-        );
+        List<Map<String, Object>> rows = callRows("searchRecipesByName", Map.of("keyword", keyword));
         return rows.stream().map(this::toRecipe).toList();
     }
 
     @Override
     public Recipe findRecipeByIdOrName(String idOrName) {
-        List<Map<String, Object>> rows = executeCypher(
-            """
-            MATCH (r:Recipe)
-            WHERE elementId(r) = $value OR r.id = $value OR r.name = $value
-            RETURN elementId(r) AS id,
-                   r.name AS name,
-                   r.ingredients AS ingredients,
-                   r.detailedIngredients AS detailedIngredients,
-                   r.steps AS steps
-            LIMIT 1
-            """,
-            Map.of("value", idOrName)
-        );
+        List<Map<String, Object>> rows = callRows("findRecipeByIdOrName", Map.of("idOrName", idOrName));
         if (rows.isEmpty()) {
             return null;
         }
@@ -434,97 +244,37 @@ public class DefaultNeo4jMcpAdapter implements Neo4jMcpAdapter {
 
     @Override
     public void likeRecipe(String userId, String recipeId) {
-        executeWrite(
-            """
-            MERGE (u:User {id: $userId})
-            WITH u
-            MATCH (r:Recipe {name: $recipeId})
-            MERGE (u)-[rel:LIKES]->(r)
-            ON CREATE SET rel.timestamp = datetime()
-            ON MATCH SET rel.timestamp = datetime()
-            WITH u, r
-            OPTIONAL MATCH (u)-[old:NOT_INTERESTED]->(r)
-            DELETE old
-            """,
-            Map.of("userId", userId, "recipeId", recipeId)
-        );
+        callUpdated("likeRecipe", Map.of("userId", userId, "recipeId", recipeId));
     }
 
     @Override
     public void dislikeRecipe(String userId, String recipeId) {
-        executeWrite(
-            """
-            MERGE (u:User {id: $userId})
-            WITH u
-            MATCH (r:Recipe {name: $recipeId})
-            MERGE (u)-[rel:NOT_INTERESTED]->(r)
-            ON CREATE SET rel.timestamp = datetime()
-            WITH u, r
-            OPTIONAL MATCH (u)-[old:LIKES]->(r)
-            DELETE old
-            """,
-            Map.of("userId", userId, "recipeId", recipeId)
-        );
+        callUpdated("dislikeRecipe", Map.of("userId", userId, "recipeId", recipeId));
     }
 
     @Override
     public void favoriteIngredient(String userId, String ingredientName) {
-        executeWrite(
-            """
-            MERGE (u:User {id: $userId})
-            WITH u
-            MATCH (i:Food {name: $ingName})
-            MERGE (u)-[rel:FAVORITE]->(i)
-            ON CREATE SET rel.timestamp = datetime()
-            WITH u, i
-            OPTIONAL MATCH (u)-[old:DISLIKES]->(i)
-            DELETE old
-            """,
-            Map.of("userId", userId, "ingName", ingredientName)
-        );
+        callUpdated("favoriteIngredient", Map.of("userId", userId, "ingredientName", ingredientName));
     }
 
     @Override
     public void dislikeIngredient(String userId, String ingredientName, String reason) {
-        executeWrite(
-            """
-            MERGE (u:User {id: $userId})
-            WITH u
-            MATCH (i:Food {name: $ingName})
-            MERGE (u)-[rel:DISLIKES]->(i)
-            ON CREATE SET rel.timestamp = datetime(), rel.reason = $reason
-            WITH u, i
-            OPTIONAL MATCH (u)-[old:FAVORITE]->(i)
-            DELETE old
-            """,
-            Map.of("userId", userId, "ingName", ingredientName, "reason", reason)
-        );
+        callUpdated("dislikeIngredient", Map.of(
+            "userId", userId,
+            "ingredientName", ingredientName,
+            "reason", reason
+        ));
     }
 
     @Override
     public Map<String, Object> findFoodByName(String name) {
-        List<Map<String, Object>> rows = executeCypher(
-            """
-            MATCH (f:Food {name: $name})
-            RETURN f.name AS name,
-                   f.nutritionalValue AS nutritionalValue,
-                   f.healthBenefits AS healthBenefits,
-                   f.suitableFor AS suitableFor,
-                   f.contraindications AS contraindications,
-                   f.nutrients AS nutrients
-            LIMIT 1
-            """,
-            Map.of("name", name)
-        );
+        List<Map<String, Object>> rows = callRows("findFoodByName", Map.of("name", name));
         return rows.isEmpty() ? Map.of() : rows.get(0);
     }
 
     @Override
     public void mergeFoodNode(String name) {
-        executeWrite(
-            "MERGE (f:Food {name: $name})",
-            Map.of("name", name)
-        );
+        callUpdated("mergeFoodNode", Map.of("name", name));
     }
 
     @Override
@@ -534,169 +284,123 @@ public class DefaultNeo4jMcpAdapter implements Neo4jMcpAdapter {
                                   String suitableFor,
                                   String contraindications,
                                   Map<String, String> nutrients) {
-        executeWrite(
-            """
-            MERGE (f:Food {name: $name})
-            SET f.nutritionalValue = $nutritionalValue,
-                f.healthBenefits = $healthBenefits,
-                f.suitableFor = $suitableFor,
-                f.contraindications = $contraindications,
-                f.nutrients = $nutrients
-            """,
-            Map.of(
-                "name", name,
-                "nutritionalValue", safeString(nutritionalValue),
-                "healthBenefits", safeString(healthBenefits),
-                "suitableFor", safeString(suitableFor),
-                "contraindications", safeString(contraindications),
-                "nutrients", nutrients == null ? Map.of() : nutrients
-            )
-        );
+        callUpdated("upsertFoodDetails", Map.of(
+            "name", name,
+            "nutritionalValue", safeString(nutritionalValue),
+            "healthBenefits", safeString(healthBenefits),
+            "suitableFor", safeString(suitableFor),
+            "contraindications", safeString(contraindications),
+            "nutrients", nutrients == null ? Map.of() : nutrients
+        ));
     }
 
     @Override
     public void deleteFoodByName(String name) {
-        executeWrite("MATCH (f:Food) WHERE f.name = $name DETACH DELETE f", Map.of("name", name));
+        callUpdated("deleteFoodByName", Map.of("name", name));
     }
 
     @Override
     public long countFoods() {
-        return singleCount("MATCH (f:Food) RETURN count(f) AS c");
+        return singleCountFromOp("countFoods");
     }
 
     @Override
     public long countRecipes() {
-        return singleCount("MATCH (r:Recipe) RETURN count(r) AS c");
+        return singleCountFromOp("countRecipes");
     }
 
     @Override
     public long countComplementary() {
-        return singleCount("MATCH ()-[r:COMPLEMENTARY]-() RETURN count(r) AS c");
+        return singleCountFromOp("countComplementary");
     }
 
     @Override
     public long countIncompatible() {
-        return singleCount("MATCH ()-[r:INCOMPATIBLE]-() RETURN count(r) AS c");
+        return singleCountFromOp("countIncompatible");
     }
 
     @Override
     public long countContainsRelations() {
-        return singleCount("MATCH (:Recipe)-[r:CONTAINS]->(:Food) RETURN count(r) AS c");
+        return singleCountFromOp("countContainsRelations");
     }
 
     @Override
     public Map<String, Object> loadRelationSummary(String name) {
-        List<Map<String, Object>> rows = executeCypher(
-            """
-            MATCH (f:Food {name: $name})
-            OPTIONAL MATCH (f)-[:COMPLEMENTARY]-(comp:Food)
-            OPTIONAL MATCH (f)-[:INCOMPATIBLE]-(incomp:Food)
-            OPTIONAL MATCH (f)-[:OVERLAP]-(overlap:Food)
-            RETURN f.name AS sourceName,
-                   collect(DISTINCT comp.name) AS complementary,
-                   collect(DISTINCT incomp.name) AS incompatible,
-                   collect(DISTINCT overlap.name) AS overlap
-            LIMIT 1
-            """,
-            Map.of("name", name)
-        );
+        List<Map<String, Object>> rows = callRows("loadRelationSummary", Map.of("name", name));
         return rows.isEmpty() ? Map.of() : rows.get(0);
     }
 
     @Override
     public List<RelationExploreDTO> exploreGeneralRelations(String foodName, int limit) {
-        return exploreFoodRelations(foodName, "idx_recipe_rfr", "ANY", limit);
+        List<Map<String, Object>> rows = callRows("exploreGeneralRelations", Map.of("foodName", foodName, "limit", limit));
+        return rows.stream().map(this::toRelationExploreDto).toList();
     }
 
     @Override
     public void mergeComplementaryRelation(String source, String target, String description) {
-        executeWrite(
-            """
-            MATCH (s:Food {name: $source}), (t:Food {name: $target})
-            OPTIONAL MATCH (s)-[existing:COMPLEMENTARY]-(t)
-            WITH s, t, existing
-            WHERE existing IS NULL
-            WITH CASE WHEN s.name <= t.name THEN s ELSE t END AS a,
-                 CASE WHEN s.name <= t.name THEN t ELSE s END AS b,
-                 $description AS description
-            CREATE (a)-[r:COMPLEMENTARY]->(b)
-            SET r.description = description
-            """,
-            Map.of("source", source, "target", target, "description", safeString(description))
-        );
+        callUpdated("mergeComplementaryRelation", Map.of(
+            "source", source,
+            "target", target,
+            "description", safeString(description)
+        ));
     }
 
     @Override
     public void mergeIncompatibleRelation(String source, String target, String description) {
-        executeWrite(
-            """
-            MATCH (s:Food {name: $source}), (t:Food {name: $target})
-            OPTIONAL MATCH (s)-[existing:INCOMPATIBLE]-(t)
-            WITH s, t, existing
-            WHERE existing IS NULL
-            WITH CASE WHEN s.name <= t.name THEN s ELSE t END AS a,
-                 CASE WHEN s.name <= t.name THEN t ELSE s END AS b,
-                 $description AS description
-            CREATE (a)-[r:INCOMPATIBLE]->(b)
-            SET r.description = description
-            """,
-            Map.of("source", source, "target", target, "description", safeString(description))
-        );
+        callUpdated("mergeIncompatibleRelation", Map.of(
+            "source", source,
+            "target", target,
+            "description", safeString(description)
+        ));
     }
 
     @Override
     public void mergeOverlapRelation(String source, String target, String description) {
-        executeWrite(
-            """
-            MATCH (s:Food {name: $source}), (t:Food {name: $target})
-            OPTIONAL MATCH (s)-[existing:OVERLAP]-(t)
-            WITH s, t, existing
-            WHERE existing IS NULL
-            WITH CASE WHEN s.name <= t.name THEN s ELSE t END AS a,
-                 CASE WHEN s.name <= t.name THEN t ELSE s END AS b,
-                 $description AS description
-            CREATE (a)-[r:OVERLAP]->(b)
-            SET r.description = description
-            """,
-            Map.of("source", source, "target", target, "description", safeString(description))
-        );
+        callUpdated("mergeOverlapRelation", Map.of(
+            "source", source,
+            "target", target,
+            "description", safeString(description)
+        ));
     }
 
     @Override
     public Recipe upsertRecipe(String name, String ingredients, String detailedIngredients, String steps) {
-        List<Map<String, Object>> rows = executeCypher(
-            """
-            MERGE (r:Recipe {name: $name})
-            SET r.ingredients = $ingredients,
-                r.detailedIngredients = $detailedIngredients,
-                r.steps = $steps
-            RETURN elementId(r) AS id,
-                   r.name AS name,
-                   r.ingredients AS ingredients,
-                   r.detailedIngredients AS detailedIngredients,
-                   r.steps AS steps
-            """,
-            Map.of(
-                "name", name,
-                "ingredients", safeString(ingredients),
-                "detailedIngredients", safeString(detailedIngredients),
-                "steps", safeString(steps)
-            )
-        );
+        List<Map<String, Object>> rows = callRows("upsertRecipe", Map.of(
+            "name", name,
+            "ingredients", safeString(ingredients),
+            "detailedIngredients", safeString(detailedIngredients),
+            "steps", safeString(steps)
+        ));
         return rows.isEmpty() ? null : toRecipe(rows.get(0));
     }
 
     @Override
     public void linkContains(String recipeName, String foodName) {
-        executeWrite(
-            """
-            MERGE (f:Food {name: $foodName})
-            WITH f
-            MATCH (r:Recipe {name: $recipeName})
-            MERGE (r)-[:CONTAINS]->(f)
-            """,
-            Map.of("recipeName", recipeName, "foodName", foodName)
+        callUpdated("linkContains", Map.of("recipeName", recipeName, "foodName", foodName));
+    }
+
+    private List<Map<String, Object>> callRows(String op, Map<String, Object> args) {
+        Map<String, Object> payload = callToolForPayload(
+            properties.getToolDietDispatch(),
+            Map.of("op", op, "args", safeParams(args))
         );
+        return toRows(payload);
+    }
+
+    private int callUpdated(String op, Map<String, Object> args) {
+        Map<String, Object> payload = callToolForPayload(
+            properties.getToolDietDispatch(),
+            Map.of("op", op, "args", safeParams(args))
+        );
+        return asInt(payload.getOrDefault("updated", 0));
+    }
+
+    private long singleCountFromOp(String op) {
+        List<Map<String, Object>> rows = callRows(op, Map.of());
+        if (rows == null || rows.isEmpty()) {
+            return 0L;
+        }
+        return asLong(rows.get(0).get("c"));
     }
 
     private McpSyncClient ensureClient() {
@@ -745,8 +449,16 @@ public class DefaultNeo4jMcpAdapter implements Neo4jMcpAdapter {
                     throw new IllegalStateException("MCP 并发已达上限，等待超时");
                 }
                 McpSchema.CallToolResult result = ensureClient().callTool(new McpSchema.CallToolRequest(toolName, args));
+                if (result == null) {
+                    throw new IllegalStateException("MCP 工具返回 null 结果: " + toolName);
+                }
                 if (Boolean.TRUE.equals(result.isError())) {
                     throw new IllegalStateException("MCP 工具执行失败: " + extractText(result));
+                }
+                String txt = extractText(result);
+                if (!StringUtils.hasText(txt)) {
+                    log.warn("MCP 工具 '{}' 返回空内容（可能没有 outputSchema 或执行异常）", toolName);
+                    throw new IllegalStateException("MCP 工具返回空内容: " + toolName);
                 }
                 return extractPayload(result);
             } catch (Exception ex) {
@@ -844,14 +556,6 @@ public class DefaultNeo4jMcpAdapter implements Neo4jMcpAdapter {
             return number.longValue();
         }
         return 0L;
-    }
-
-    private long singleCount(String query) {
-        List<Map<String, Object>> rows = executeCypher(query, Map.of());
-        if (rows == null || rows.isEmpty()) {
-            return 0L;
-        }
-        return asLong(rows.get(0).get("c"));
     }
 
     private String safeString(String value) {

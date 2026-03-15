@@ -11,9 +11,9 @@ public interface RecipeReviewRepository extends JpaRepository<RecipeReview, Long
 
     List<RecipeReview> findByUserIdOrderByUpdatedAtDesc(Long userId);
 
-    List<RecipeReview> findByRecipeIdOrderByUpdatedAtDesc(String recipeId);
+    List<RecipeReview> findByRecipeNameOrderByUpdatedAtDesc(String recipeName);
 
-    Optional<RecipeReview> findByUserIdAndRecipeId(Long userId, String recipeId);
+    Optional<RecipeReview> findByUserIdAndRecipeName(Long userId, String recipeName);
 
     long countByUserId(Long userId);
 }

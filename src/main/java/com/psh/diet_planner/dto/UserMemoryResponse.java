@@ -50,7 +50,7 @@ public class UserMemoryResponse {
 
     @Data
     public static class RecipePrefItem {
-        private String recipeId;
+        private String recipeName;
         private String preference;
         private String reason;
     }

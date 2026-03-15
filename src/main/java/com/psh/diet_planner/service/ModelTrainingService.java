@@ -84,12 +84,16 @@ public class ModelTrainingService {
         }
         List<String> command = new ArrayList<>();
         if (condaEnv != null && !condaEnv.isBlank()) {
-            command.addAll(List.of("conda", "run", "--no-capture-output", "-n", condaEnv, pythonCommand, scriptName));
+            command.addAll(List.of("conda", "run", "--no-capture-output", "-n", condaEnv, pythonCommand, "-u", scriptName));
         } else {
-            command.addAll(List.of(pythonCommand, scriptName));
+            command.addAll(List.of(pythonCommand, "-u", scriptName));
         }
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.directory(workingDir.toFile());
+        pb.environment().put("PYTHONIOENCODING", "utf-8");
+        pb.environment().put("CONDA_NO_PLUGINS", "true");
+        pb.environment().put("CONDA_REPORT_ERRORS", "false");
+        pb.environment().put("PYTHONUNBUFFERED", "1");
         // Keep Python scripts aligned with the active Spring Neo4j configuration.
         if (neo4jUri != null && !neo4jUri.isBlank()) {
             pb.environment().put("NEO4J_URI", neo4jUri);

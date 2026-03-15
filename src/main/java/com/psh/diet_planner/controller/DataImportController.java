@@ -14,8 +14,11 @@ import com.psh.diet_planner.service.support.mcp.Neo4jMcpAdapter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.concurrent.RejectedExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,6 +42,9 @@ public class DataImportController {
     @Autowired
     private TrainingTaskService trainingTaskService;
     @Autowired
+    @Qualifier("importTrainingTaskExecutor")
+    private TaskExecutor taskExecutor;
+    @Autowired
     private Neo4jMcpAdapter neo4jMcpAdapter;
     @Autowired
     private McpHealthCheckService mcpHealthCheckService;
@@ -54,27 +60,37 @@ public class DataImportController {
     
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/import-food-file")
-    public ApiResponse<String> importFoodFile(@RequestParam("file") MultipartFile file) {
+    public ApiResponse<String> importFoodFile(@RequestParam("file") MultipartFile file,
+                                              @RequestParam(value = "autoEmbed", required = false, defaultValue = "false") boolean autoEmbed) {
+        Path tempFile = null;
         try {
-            Path tempFile = saveTempUpload(file, "food_");
-            foodDataService.importFoodDataFromJson(tempFile.toString());
-            Files.delete(tempFile);
+            tempFile = saveTempUpload(file, "food_");
+            foodDataService.importFoodDataFromJson(tempFile.toString(), null, autoEmbed);
             return ApiResponse.success("食物数据导入成功", "食物数据导入成功");
         } catch (Exception e) {
             e.printStackTrace();
             return ApiResponse.error("导入失败: " + e.getMessage());
+        } finally {
+            if (tempFile != null) {
+                try {
+                    Files.deleteIfExists(tempFile);
+                } catch (Exception ignored) {
+                }
+            }
         }
     }
     
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/import-food-path")
-    public ApiResponse<String> importFoodByPath(@RequestParam("path") String filePath) {
+    public ApiResponse<String> importFoodByPath(@RequestParam("path") String filePath,
+                                                @RequestParam(value = "autoEmbed", required = false, defaultValue = "false") boolean autoEmbed) {
         ImportProgress running = importTaskService.getRunningTask();
         if (running != null) {
             return ApiResponse.error("已有导入任务正在运行（任务ID: " + running.getTaskId() + "），请等待完成或取消后再试");
         }
         ImportProgress progress = importTaskService.createTask();
-        new Thread(() -> {
+        try {
+            taskExecutor.execute(() -> {
             try {
                 int itemCount = foodDataService.countItemsInJsonFile(filePath);
                 progress.setTotalFiles(1);
@@ -83,7 +99,7 @@ public class DataImportController {
                 progress.setCurrentFileItems(itemCount);
                 progress.setCurrentFileProcessedItems(0);
                 progress.setPhase("正在导入文件: " + Path.of(filePath).getFileName());
-                foodDataService.importFoodDataFromJson(filePath, progress);
+                foodDataService.importFoodDataFromJson(filePath, progress, autoEmbed);
                 if (progress.isCancelled()) {
                     progress.setStatus("CANCELLED");
                     progress.setPhase("导入已取消");
@@ -97,7 +113,11 @@ public class DataImportController {
                 progress.setPhase("导入失败: " + e.getMessage());
                 progress.addError(e.getMessage());
             }
-        }, "import-food-" + progress.getTaskId()).start();
+        });
+        } catch (RejectedExecutionException e) {
+            importTaskService.removeTask(progress.getTaskId());
+            return ApiResponse.error("导入任务提交失败，线程池繁忙: " + e.getMessage());
+        }
         return ApiResponse.success(progress.getTaskId(), "食材导入任务已启动，任务ID: " + progress.getTaskId());
     }
     
@@ -109,7 +129,8 @@ public class DataImportController {
             return ApiResponse.error("已有导入任务正在运行（任务ID: " + running.getTaskId() + "），请等待完成或取消后再试");
         }
         ImportProgress progress = importTaskService.createTask();
-        new Thread(() -> {
+        try {
+            taskExecutor.execute(() -> {
             try {
                 int itemCount = foodDataService.countItemsInJsonFile(filePath);
                 progress.setTotalFiles(1);
@@ -132,13 +153,18 @@ public class DataImportController {
                 progress.setPhase("导入失败: " + e.getMessage());
                 progress.addError(e.getMessage());
             }
-        }, "import-recipe-" + progress.getTaskId()).start();
+        });
+        } catch (RejectedExecutionException e) {
+            importTaskService.removeTask(progress.getTaskId());
+            return ApiResponse.error("导入任务提交失败，线程池繁忙: " + e.getMessage());
+        }
         return ApiResponse.success(progress.getTaskId(), "食谱导入任务已启动，任务ID: " + progress.getTaskId());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/import-all")
-    public ApiResponse<String> importAll(@RequestParam(value = "path", required = false) String path) {
+    public ApiResponse<String> importAll(@RequestParam(value = "path", required = false) String path,
+                                         @RequestParam(value = "autoEmbed", required = false, defaultValue = "false") boolean autoEmbed) {
         // 防止并发导入：检查是否有正在运行的任务
         ImportProgress running = importTaskService.getRunningTask();
         if (running != null) {
@@ -147,9 +173,10 @@ public class DataImportController {
         String dataDir = (path != null && !path.isEmpty()) ? path : foodDataPath;
         ImportProgress progress = importTaskService.createTask();
         // 异步执行导入
-        new Thread(() -> {
+        try {
+            taskExecutor.execute(() -> {
             try {
-                foodDataService.importAllFromDataDir(dataDir, progress);
+                foodDataService.importAllFromDataDir(dataDir, progress, autoEmbed);
                 if (progress.isCancelled()) {
                     progress.setStatus("CANCELLED");
                     progress.setPhase("导入已取消");
@@ -162,7 +189,11 @@ public class DataImportController {
                 progress.setPhase("导入失败: " + e.getMessage());
                 progress.addError(e.getMessage());
             }
-        }, "import-all-" + progress.getTaskId()).start();
+        });
+        } catch (RejectedExecutionException e) {
+            importTaskService.removeTask(progress.getTaskId());
+            return ApiResponse.error("导入任务提交失败，线程池繁忙: " + e.getMessage());
+        }
         return ApiResponse.success(progress.getTaskId(), "导入任务已启动，任务ID: " + progress.getTaskId());
     }
 
@@ -203,7 +234,8 @@ public class DataImportController {
             return ApiResponse.error("已有训练任务正在运行（任务ID: " + running.getTaskId() + "），请等待完成后再试");
         }
         TrainingProgress progress = trainingTaskService.createTask("metapath2vec");
-        new Thread(() -> {
+        try {
+            taskExecutor.execute(() -> {
             try {
                 modelTrainingService.trainMetapath2Vec(progress);
                 progress.setStatus("COMPLETED");
@@ -216,7 +248,14 @@ public class DataImportController {
                 progress.setResult(progress.getPhase());
                 progress.appendLog(progress.getPhase());
             }
-        }, "train-metapath-" + progress.getTaskId()).start();
+        });
+        } catch (RejectedExecutionException e) {
+            progress.setStatus("FAILED");
+            progress.setPhase("训练任务提交失败，线程池繁忙: " + e.getMessage());
+            progress.setResult(progress.getPhase());
+            progress.appendLog(progress.getPhase());
+            return ApiResponse.error(progress.getPhase());
+        }
         return ApiResponse.success(progress.getTaskId(), "Metapath2Vec 训练任务已启动，任务ID: " + progress.getTaskId());
     }
 
@@ -228,13 +267,22 @@ public class DataImportController {
             return ApiResponse.error("已有训练任务正在运行（任务ID: " + running.getTaskId() + "），请等待完成后再试");
         }
         TrainingProgress progress = trainingTaskService.createTask("graphsage");
-        new Thread(() -> {
+        try {
+            taskExecutor.execute(() -> {
             try {
                 modelTrainingService.trainGraphSage(progress);
                 progress.setPhase("正在重新加载 ONNX 模型");
                 progress.setProgress(98);
                 onnxInferenceService.loadModel();
-                progress.appendLog(onnxInferenceService.isModelLoaded() ? "ONNX 模型重载成功" : "未找到 ONNX 模型文件");
+                boolean onnxOk = onnxInferenceService.isModelLoaded();
+                progress.appendLog(onnxOk ? "ONNX 模型重载成功" : "未找到 ONNX 模型文件");
+                if (!onnxOk) {
+                    progress.setStatus("FAILED");
+                    progress.setPhase("GraphSAGE 训练完成，但 ONNX 模型重载失败");
+                    progress.setResult(progress.getPhase());
+                    progress.appendLog(progress.getPhase());
+                    return;
+                }
                 progress.setStatus("COMPLETED");
                 progress.setProgress(100);
                 progress.setPhase("GraphSAGE 训练完成");
@@ -244,7 +292,14 @@ public class DataImportController {
                 progress.setResult(progress.getPhase());
                 progress.appendLog(progress.getPhase());
             }
-        }, "train-graphsage-" + progress.getTaskId()).start();
+        });
+        } catch (RejectedExecutionException e) {
+            progress.setStatus("FAILED");
+            progress.setPhase("训练任务提交失败，线程池繁忙: " + e.getMessage());
+            progress.setResult(progress.getPhase());
+            progress.appendLog(progress.getPhase());
+            return ApiResponse.error(progress.getPhase());
+        }
         return ApiResponse.success(progress.getTaskId(), "GraphSAGE 训练任务已启动，任务ID: " + progress.getTaskId());
     }
 

@@ -26,10 +26,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class DietController {
 
     private final DietSearchService dietSearchService;
-
+    
     @PostMapping("/analyze")
     public ResponseEntity<ApiResponse<List<DietSearchResponse>>> analyze(@Valid @RequestBody DietQueryRequest request) {
-        return ResponseEntity.ok(ApiResponse.success(dietSearchService.comprehensiveSearch(request), "智能食材分析完成"));
+        List<DietSearchResponse> results = dietSearchService.comprehensiveSearch(request);
+        if (request.isIncludeAiAdvice()) {
+            String ai = dietSearchService.generateAiAdvice(request.getFoodName(), request.getIntent(), results, request.getUserId());
+            ApiResponse<List<DietSearchResponse>> resp = ApiResponse.successWithAi(results, "智能食材分析完成", ai);
+            return ResponseEntity.ok(resp);
+        }
+        return ResponseEntity.ok(ApiResponse.success(results, "智能食材分析完成"));
     }
 
     @PostMapping("/all")

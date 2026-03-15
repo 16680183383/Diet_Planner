@@ -41,13 +41,13 @@ public class FoodDataService {
      * 从JSON文件导入食物数据到Neo4j数据库
      */
     public void importFoodDataFromJson(String jsonFilePath) {
-        importFoodDataFromJson(jsonFilePath, null);
+        importFoodDataFromJson(jsonFilePath, null, false);
     }
 
     /**
      * 从JSON文件导入食物数据（带进度跟踪和逐条容错）
      */
-    public void importFoodDataFromJson(String jsonFilePath, ImportProgress progress) {
+    public void importFoodDataFromJson(String jsonFilePath, ImportProgress progress, boolean autoEmbed) {
         if (progress != null) {
             progress.setPhase("导入食物: " + new File(jsonFilePath).getName());
         }
@@ -60,7 +60,7 @@ public class FoodDataService {
                     for (JsonNode item : node) {
                         if (progress != null && progress.isCancelled()) return;
                         try {
-                            importSingleFood(item);
+                            importSingleFood(item, autoEmbed);
                             if (progress != null) {
                                 progress.setSuccessCount(progress.getSuccessCount() + 1);
                                 progress.setCurrentFileProcessedItems(progress.getCurrentFileProcessedItems() + 1);
@@ -77,7 +77,7 @@ public class FoodDataService {
                 } else {
                     if (progress != null && progress.isCancelled()) return;
                     try {
-                        importSingleFood(node);
+                        importSingleFood(node, autoEmbed);
                         if (progress != null) {
                             progress.setSuccessCount(progress.getSuccessCount() + 1);
                             progress.setCurrentFileProcessedItems(progress.getCurrentFileProcessedItems() + 1);
@@ -107,7 +107,7 @@ public class FoodDataService {
             File[] files = dir.listFiles((d, name) -> name.endsWith(".json"));
             if (files != null) {
                 for (File file : files) {
-                    importFoodDataFromJson(file.getAbsolutePath());
+                    importFoodDataFromJson(file.getAbsolutePath(), null, false);
                 }
             }
         }
@@ -117,7 +117,7 @@ public class FoodDataService {
      * 导入单个食物数据
      * @param foodNode JSON节点
      */
-    private void importSingleFood(JsonNode foodNode) {
+    private void importSingleFood(JsonNode foodNode, boolean autoEmbed) {
         String name = foodNode.get("食物名称").asText();
         Map<String, Object> existingFood = loadFoodByName(name);
         String existingNv = asString(existingFood.get("nutritionalValue"));
@@ -177,8 +177,10 @@ public class FoodDataService {
         // 关系改为 append-only：仅 MERGE 新关系，不覆盖、不删除历史关系
         mergeRelations(name, complementaryIncoming, incompatibleIncoming, overlapIncoming);
 
-        // 冷启动：如果 ONNX 模型已加载，自动为新食材生成 sage_embedding
-        tryGenerateEmbedding(name);
+        // 冷启动：如果 ONNX 模型已加载，且开启自动补全，生成 sage_embedding
+        if (autoEmbed) {
+            tryGenerateEmbedding(name);
+        }
     }
 
     private void mergeRelations(String sourceName,
@@ -267,7 +269,7 @@ public class FoodDataService {
         // 只做增量导入，不删除历史关系
         if (rootNode.isArray()) {
             for (JsonNode node : rootNode) {
-                importSingleFood(node);
+                        importSingleFood(node, autoEmbed);
             }
         } else {
             importSingleFood(rootNode);
@@ -433,10 +435,10 @@ public class FoodDataService {
      * 规则：food*.json → 食物数据，recipe*.json → 食谱数据，其余忽略
      */
     public void importAllFromDataDir(String dataDir) {
-        importAllFromDataDir(dataDir, null);
+        importAllFromDataDir(dataDir, null, false);
     }
 
-    public void importAllFromDataDir(String dataDir, ImportProgress progress) {
+    public void importAllFromDataDir(String dataDir, ImportProgress progress, boolean autoEmbed) {
         File dir = new File(dataDir);
         if (!dir.isDirectory()) {
             throw new RuntimeException("数据目录不存在: " + dataDir);
@@ -487,7 +489,7 @@ public class FoodDataService {
             }
             log.info("导入食物文件: {}", f.getName());
             try {
-                importFoodDataFromJson(f.getAbsolutePath(), progress);
+                importFoodDataFromJson(f.getAbsolutePath(), progress, autoEmbed);
             } catch (RuntimeException e) {
                 if (progress != null) {
                     progress.setFailedFiles(progress.getFailedFiles() + 1);

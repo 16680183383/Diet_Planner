@@ -117,11 +117,10 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public RecipeReviewResponse submitRecipeReview(RecipeReviewRequest request) {
         RecipeReview review = recipeReviewRepository
-                .findByUserIdAndRecipeId(request.getUserId(), request.getRecipeId())
+                .findByUserIdAndRecipeName(request.getUserId(), request.getRecipeName())
                 .orElseGet(RecipeReview::new);
 
         review.setUserId(request.getUserId());
-        review.setRecipeId(request.getRecipeId());
         review.setRecipeName(request.getRecipeName());
         review.setTasteRating(request.getTasteRating());
         review.setDifficultyRating(request.getDifficultyRating());
@@ -168,14 +167,14 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<RecipeReviewResponse> getRecipeReviewsByRecipe(String recipeId) {
-        return recipeReviewRepository.findByRecipeIdOrderByUpdatedAtDesc(recipeId)
+    public List<RecipeReviewResponse> getRecipeReviewsByRecipe(String recipeName) {
+        return recipeReviewRepository.findByRecipeNameOrderByUpdatedAtDesc(recipeName)
                 .stream().map(this::toRecipeReviewResponse).collect(Collectors.toList());
     }
 
     @Override
-    public RecipeReviewResponse getUserRecipeReview(Long userId, String recipeId) {
-        return recipeReviewRepository.findByUserIdAndRecipeId(userId, recipeId)
+    public RecipeReviewResponse getUserRecipeReview(Long userId, String recipeName) {
+        return recipeReviewRepository.findByUserIdAndRecipeName(userId, recipeName)
                 .map(this::toRecipeReviewResponse).orElse(null);
     }
 
@@ -218,7 +217,7 @@ public class ReviewServiceImpl implements ReviewService {
         List<RecipePreference> recPrefs = recipePreferenceRepository.findByUserId(uid);
         memory.setRecipePreferences(recPrefs.stream().map(p -> {
             UserMemoryResponse.RecipePrefItem item = new UserMemoryResponse.RecipePrefItem();
-            item.setRecipeId(p.getRecipeId());
+            item.setRecipeName(p.getRecipeName());
             item.setPreference(p.getPreference().name());
             item.setReason(p.getReason());
             return item;
@@ -263,7 +262,7 @@ public class ReviewServiceImpl implements ReviewService {
         RecipeReviewResponse resp = new RecipeReviewResponse();
         resp.setId(review.getId());
         resp.setUserId(review.getUserId());
-        resp.setRecipeId(review.getRecipeId());
+        resp.setRecipeId(review.getRecipeName());
         resp.setRecipeName(review.getRecipeName());
         resp.setTasteRating(review.getTasteRating());
         resp.setDifficultyRating(review.getDifficultyRating());

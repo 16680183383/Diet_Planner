@@ -41,33 +41,33 @@ public class PreferenceServiceImpl implements PreferenceService {
 
     @Override
     @Transactional
-    public void likeRecipe(String userId, String recipeId) {
+    public void likeRecipe(String userId, String recipeName) {
         // 1. MySQL 持久化（无条件执行）
         RecipePreference pref = recipePreferenceRepository
-            .findByUserIdAndRecipeId(userId, recipeId)
+            .findByUserIdAndRecipeName(userId, recipeName)
             .orElseGet(RecipePreference::new);
         pref.setUserId(userId);
-        pref.setRecipeId(recipeId);
+        pref.setRecipeName(recipeName);
         pref.setPreference(RecipePreference.PreferenceType.LIKE);
         pref.setUpdatedAt(LocalDateTime.now());
         pref.setReason(null);
         recipePreferenceRepository.save(pref);
         // 2. 尝试通过 MCP 同步图偏好关系
-        tryNeo4j(() -> neo4jPreferenceService.likeRecipe(userId, recipeId), "likeRecipe");
+        tryNeo4j(() -> neo4jPreferenceService.likeRecipe(userId, recipeName), "likeRecipe");
     }
 
     @Override
     @Transactional
-    public void dislikeRecipe(String userId, String recipeId) {
+    public void dislikeRecipe(String userId, String recipeName) {
         RecipePreference pref = recipePreferenceRepository
-            .findByUserIdAndRecipeId(userId, recipeId)
+            .findByUserIdAndRecipeName(userId, recipeName)
             .orElseGet(RecipePreference::new);
         pref.setUserId(userId);
-        pref.setRecipeId(recipeId);
+        pref.setRecipeName(recipeName);
         pref.setPreference(RecipePreference.PreferenceType.NOT_INTERESTED);
         pref.setUpdatedAt(LocalDateTime.now());
         recipePreferenceRepository.save(pref);
-        tryNeo4j(() -> neo4jPreferenceService.dislikeRecipe(userId, recipeId), "dislikeRecipe");
+        tryNeo4j(() -> neo4jPreferenceService.dislikeRecipe(userId, recipeName), "dislikeRecipe");
     }
 
     @Override

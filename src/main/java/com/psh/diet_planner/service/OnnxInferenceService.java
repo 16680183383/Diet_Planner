@@ -66,19 +66,28 @@ public class OnnxInferenceService {
      */
     public synchronized void loadModel() {
         Path path = Paths.get(modelPath).toAbsolutePath().normalize();
+
+        // Always clear the old session first so load status reflects the latest file state.
+        if (session != null) {
+            try {
+                session.close();
+            } catch (OrtException e) {
+                log.warn("关闭旧 ONNX session 异常: {}", e.getMessage());
+            } finally {
+                session = null;
+            }
+        }
+
         if (!Files.exists(path)) {
             log.info("ONNX 模型尚未生成: {}，请先执行 GraphSAGE 训练", path);
             return;
         }
         try {
-            // 关闭旧 session
-            if (session != null) {
-                session.close();
-            }
             env = OrtEnvironment.getEnvironment();
             session = env.createSession(path.toString());
             log.info("ONNX 模型已加载: {}", path);
         } catch (OrtException e) {
+            session = null;
             log.error("加载 ONNX 模型失败: {}", e.getMessage());
         }
     }
@@ -135,7 +144,8 @@ public class OnnxInferenceService {
      * 核心推理：根据食材名称，从 Neo4j 获取特征和邻居信息，运行 ONNX 模型
      */
     public float[] generateEmbedding(String foodName) {
-        if (!isModelLoaded()) {
+        OrtSession activeSession = session;
+        if (activeSession == null) {
             throw new IllegalStateException("ONNX 模型未加载，请先执行 GraphSAGE 训练");
         }
 
@@ -147,6 +157,7 @@ public class OnnxInferenceService {
         fillNeighborFeatures(foodName, "COMPLEMENTARY", REL_COMPLEMENTARY, neighborFeatures);
         fillNeighborFeatures(foodName, "INCOMPATIBLE", REL_INCOMPATIBLE, neighborFeatures);
         fillNeighborFeatures(foodName, "OVERLAP", REL_OVERLAP, neighborFeatures);
+        fillContainsNeighborFeatures(foodName, neighborFeatures);
         // CONTAINS: Food 节点没有出边（只有 Recipe→Food），所以保持零向量
 
         // 3. 运行 ONNX 推理
@@ -159,7 +170,7 @@ public class OnnxInferenceService {
             inputs.put("node_feat", nodeTensor);
             inputs.put("rel_neighbor_feat", neighborTensor);
 
-            try (OrtSession.Result result = session.run(inputs)) {
+            try (OrtSession.Result result = activeSession.run(inputs)) {
                 float[][] output = (float[][]) result.get(0).getValue();
                 return output[0]; // [128]
             } finally {
@@ -197,6 +208,7 @@ public class OnnxInferenceService {
             float[] partial = hasThisEmbedding
                 ? parseEmbedding(values, EMB_DIM)
                 : Arrays.copyOfRange(globalMean, offset, offset + EMB_DIM);
+            partial = normalizeVec(partial);
             System.arraycopy(partial, 0, features, offset, 64);
             offset += EMB_DIM;
         }
@@ -265,15 +277,27 @@ public class OnnxInferenceService {
      */
     private void fillNeighborFeatures(String foodName, String relType, int relIndex, float[][] neighborFeatures) {
         List<Map<String, Object>> records = neo4jMcpAdapter.findNeighborMetapathEmbeddings(foodName, relType);
+        fillNeighborFeaturesFromRecords(records, relIndex, neighborFeatures);
+    }
 
+    private void fillContainsNeighborFeatures(String foodName, float[][] neighborFeatures) {
+        List<Map<String, Object>> records = neo4jMcpAdapter.findRecipeNeighborEmbeddings(foodName);
+        fillNeighborFeaturesFromRecords(records, REL_CONTAINS, neighborFeatures);
+    }
+
+    private void fillNeighborFeaturesFromRecords(List<Map<String, Object>> records, int relIndex, float[][] neighborFeatures) {
         if (records.isEmpty()) return; // 保持零向量
 
-        // 累加所有邻居的特征
+        float[] globalMean = getGlobalMeanFeatures();
         float[] sum = new float[FEATURE_DIM];
         for (Map<String, Object> r : records) {
             int offset = 0;
             for (String key : EMB_KEYS) {
-                float[] partial = parseEmbedding(asList(r.get(key)), 64);
+                List<?> values = asList(r.get(key));
+                float[] partial = (values != null && !values.isEmpty())
+                    ? parseEmbedding(values, 64)
+                    : Arrays.copyOfRange(globalMean, offset, offset + EMB_DIM);
+                partial = normalizeVec(partial);
                 for (int i = 0; i < 64; i++) {
                     sum[offset + i] += partial[i];
                 }
@@ -281,7 +305,6 @@ public class OnnxInferenceService {
             }
         }
 
-        // 计算均值
         int count = records.size();
         for (int i = 0; i < FEATURE_DIM; i++) {
             neighborFeatures[relIndex][i] = sum[i] / count;
@@ -303,6 +326,22 @@ public class OnnxInferenceService {
             }
         }
         return result;
+    }
+
+    private float[] normalizeVec(float[] vec) {
+        float norm = 0f;
+        for (float v : vec) {
+            norm += v * v;
+        }
+        norm = (float) Math.sqrt(norm);
+        if (norm <= 1e-12f) {
+            return vec;
+        }
+        float[] out = new float[vec.length];
+        for (int i = 0; i < vec.length; i++) {
+            out[i] = vec[i] / norm;
+        }
+        return out;
     }
 
     private List<?> asList(Object value) {
