@@ -9,15 +9,14 @@ import com.psh.diet_planner.dto.PairingInsightResponse;
 import com.psh.diet_planner.dto.PairingResponse;
 import com.psh.diet_planner.dto.SafetyCheckRequest;
 import com.psh.diet_planner.dto.SafetyCheckResponse;
-import com.psh.diet_planner.dto.SemanticSearchResponse;
 import com.psh.diet_planner.dto.SmartMealPlanRequest;
 import com.psh.diet_planner.dto.SmartMealPlanResponse;
 import com.psh.diet_planner.dto.UserMemoryResponse;
 import com.psh.diet_planner.exception.CustomException;
 import com.psh.diet_planner.service.FoodGraphService;
 import com.psh.diet_planner.service.ReviewService;
-import com.psh.diet_planner.service.support.mcp.Neo4jMcpAdapter;
 import com.psh.diet_planner.service.support.FoodJsonWarningService;
+import com.psh.diet_planner.service.support.mcp.Neo4jMcpAdapter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -37,26 +36,28 @@ public class FoodGraphServiceImpl implements FoodGraphService {
     private static final int DEFAULT_MEAL_PAIRINGS = 3;
     private static final int DEFAULT_RECIPE_LIMIT = 3;
     private static final String MEAL_PLAN_PROMPT = """
-            你是一位资深的临床营养师兼创意名厨。
+            你是一位循证营养学专家与注册临床营养师，同时具备菜单设计经验。
             主食材：{main}
             搭配候选：{pairings}
             知识图谱中已存在的菜谱参考：{recipes}
             {userProfile}
 
-            请完成以下任务：
-            1. 判断这些食材在营养素互补、风味搭配或烹饪技法上的协同逻辑。
-            2. 提供 1 个菜名以及 3 条烹饪要点（火候、调味或摆盘即可）。
-            3. 若参考菜谱为空，请说明需要原创方案。
-            字数控制在 250 字以内，以第二人称输出。
+            请基于用户健康档案与历史评价信息完成以下任务：
+            1. 说明这些食材在营养素互补、风味搭配或烹饪技法上的协同逻辑，并指出关键注意事项。
+            2. 给出 1 个菜名与 3 条烹饪要点（火候、调味或摆盘即可）。
+            3. 若参考菜谱为空，请明确说明需要原创方案并给出合理依据。
+            输出字数控制在 250 字以内，以第二人称输出。
             """;
     private static final String CREATIVE_PROMPT = """
-            我的冰箱里只有：{leftovers}。
+            你是一位循证营养学背景的创意主厨，需严格遵循用户健康档案与评价偏好。
+            可用食材：{leftovers}
             {userProfile}
+
             请严格执行：
-            1. 先判断这些食材的味型与质地，补齐一两个必要的基础调味料即可。
-            2. 若组合罕见，请基于图谱味型逻辑创造新菜名，并解释灵感来源。
-            3. 输出分步烹饪指令，步骤不超过 6 条。
-            4. 最终口吻需兼具专业与鼓励。
+            1. 判断食材的味型与质地，补齐一到两种基础调味料即可。
+            2. 若组合罕见，基于图谱味型逻辑创造新菜名，并解释灵感来源。
+            3. 输出分步烹饪指令，步骤不超过 6 条，优先低油盐、可复制。
+            4. 语气专业、克制，必要时给出替换建议。
             """;
 
     private final Neo4jMcpAdapter neo4jMcpAdapter;
@@ -64,7 +65,7 @@ public class FoodGraphServiceImpl implements FoodGraphService {
     private final ReviewService reviewService;
     private final ChatClient chatClient;
 
-            public FoodGraphServiceImpl(Neo4jMcpAdapter neo4jMcpAdapter,
+    public FoodGraphServiceImpl(Neo4jMcpAdapter neo4jMcpAdapter,
                                 FoodJsonWarningService foodJsonWarningService,
                                 ReviewService reviewService,
                                 ChatClient.Builder chatClientBuilder) {
@@ -72,26 +73,6 @@ public class FoodGraphServiceImpl implements FoodGraphService {
         this.foodJsonWarningService = foodJsonWarningService;
         this.reviewService = reviewService;
         this.chatClient = chatClientBuilder.build();
-    }
-
-    @Override
-    public List<SemanticSearchResponse> searchSemanticSubstitutes(String foodName, int limit) {
-        String normalized = normalizeFoodName(foodName);
-        ensureFoodExists(normalized);
-        int queryLimit = limit > 0 ? limit : DEFAULT_LIMIT;
-        List<Map<String, Object>> projections = neo4jMcpAdapter.findSemanticSubstitutes(normalized, queryLimit);
-        List<SemanticSearchResponse> results = (projections == null ? List.<Map<String, Object>>of() : projections)
-            .stream()
-            .map(item -> SemanticSearchResponse.builder()
-                .name((String) item.get("name"))
-                .score(item.get("score") instanceof Number number ? number.doubleValue() : 0D)
-                .build())
-            .filter(item -> item.getName() != null && !item.getName().equalsIgnoreCase(normalized))
-            .toList();
-        if (results.isEmpty()) {
-            throw new CustomException(404, "暂未检索到语义相似的食材");
-        }
-        return results;
     }
 
     @Override
@@ -157,8 +138,14 @@ public class FoodGraphServiceImpl implements FoodGraphService {
             allIngredients.addAll(pairings);
             List<String> recipes = neo4jMcpAdapter.findRecipesByIngredients(allIngredients, DEFAULT_RECIPE_LIMIT);
             List<String> safeRecipes = recipes == null ? List.of() : recipes;
-            UserMemoryContext memCtx = loadMemoryContext(request.getUserId());
-            String advice = callMealPlanModel(normalized, pairings, safeRecipes, memCtx);
+            String advice = null;
+            if (request.isUseAi()) {
+                if (request.getUserId() == null) {
+                    throw new CustomException(400, "生成膳食方案需要用户健康档案与评价信息，请传入 userId");
+                }
+                UserMemoryContext memCtx = loadMemoryContext(request.getUserId());
+                advice = callMealPlanModel(normalized, pairings, safeRecipes, memCtx);
+            }
             return SmartMealPlanResponse.builder()
                 .mainIngredient(normalized)
                 .recommendedPairings(pairings)
@@ -217,6 +204,9 @@ public class FoodGraphServiceImpl implements FoodGraphService {
         List<String> ingredients = sanitizeStrings(request.getIngredients());
         if (CollectionUtils.isEmpty(ingredients)) {
             throw new CustomException(400, "请提供至少一种剩余食材");
+        }
+        if (request.getUserId() == null) {
+            throw new CustomException(400, "创意烹饪需要用户健康档案与评价信息，请传入 userId");
         }
         String joined = String.join("、", ingredients);
         UserMemoryContext memCtx = loadMemoryContext(request.getUserId());

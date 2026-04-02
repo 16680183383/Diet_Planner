@@ -19,8 +19,6 @@ public interface Neo4jMcpAdapter {
 
     Map<String, Object> healthCheck();
 
-    List<Map<String, Object>> findSemanticSubstitutes(String foodName, int limit);
-
     List<Map<String, Object>> findPairingCandidates(String foodName, int limit);
 
     List<String> findSmartPairings(String foodName, int limit);

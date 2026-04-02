@@ -18,4 +18,5 @@ public class CreativeCookingRequest {
 
     /** 当前用户 ID（可选），传入后启用记忆增强推荐 */
     private Long userId;
+
 }

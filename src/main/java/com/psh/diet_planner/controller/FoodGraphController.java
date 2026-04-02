@@ -8,19 +8,15 @@ import com.psh.diet_planner.dto.PairingInsightResponse;
 import com.psh.diet_planner.dto.PairingResponse;
 import com.psh.diet_planner.dto.SafetyCheckRequest;
 import com.psh.diet_planner.dto.SafetyCheckResponse;
-import com.psh.diet_planner.dto.SemanticSearchResponse;
 import com.psh.diet_planner.dto.SmartMealPlanRequest;
 import com.psh.diet_planner.dto.SmartMealPlanResponse;
 import com.psh.diet_planner.service.FoodGraphService;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -29,14 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class FoodGraphController {
 
     private final FoodGraphService foodGraphService;
-
-    @GetMapping("/food/search/semantic")
-    public ResponseEntity<ApiResponse<List<SemanticSearchResponse>>> semanticSearch(
-            @RequestParam("name") String foodName,
-            @RequestParam(value = "limit", defaultValue = "5") int limit) {
-        List<SemanticSearchResponse> data = foodGraphService.searchSemanticSubstitutes(foodName, limit);
-        return ResponseEntity.ok(ApiResponse.success(data, "语义替换结果生成成功"));
-    }
 
     @PostMapping("/food/pairing")
     public ResponseEntity<ApiResponse<PairingResponse>> smartPairing(@Valid @RequestBody FoodPairingRequest request) {

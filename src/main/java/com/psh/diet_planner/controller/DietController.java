@@ -7,6 +7,7 @@ import com.psh.diet_planner.dto.DietSearchResponse;
 import com.psh.diet_planner.dto.RecipeDTO;
 import com.psh.diet_planner.dto.RelationExploreRequest;
 import com.psh.diet_planner.dto.RelationExploreResponse;
+import com.psh.diet_planner.exception.CustomException;
 import com.psh.diet_planner.service.DietSearchService;
 
 import java.util.List;
@@ -29,6 +30,9 @@ public class DietController {
     
     @PostMapping("/analyze")
     public ResponseEntity<ApiResponse<List<DietSearchResponse>>> analyze(@Valid @RequestBody DietQueryRequest request) {
+        if (request.isIncludeAiAdvice() && request.getUserId() == null) {
+            throw new CustomException(400, "生成 AI 建议需要传入 userId 以读取健康档案与评价信息");
+        }
         List<DietSearchResponse> results = dietSearchService.comprehensiveSearch(request);
         if (request.isIncludeAiAdvice()) {
             String ai = dietSearchService.generateAiAdvice(request.getFoodName(), request.getIntent(), results, request.getUserId());
@@ -40,6 +44,9 @@ public class DietController {
 
     @PostMapping("/all")
     public ResponseEntity<ApiResponse<AllAspectsResponse>> analyzeAll(@Valid @RequestBody DietQueryRequest request) {
+        if (request.isIncludeAiAdvice() && request.getUserId() == null) {
+            throw new CustomException(400, "生成 AI 建议需要传入 userId 以读取健康档案与评价信息");
+        }
         return ResponseEntity.ok(ApiResponse.success(dietSearchService.fullAnalysis(request), "全维度智能分析完成"));
     }
 

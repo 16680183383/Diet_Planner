@@ -269,10 +269,10 @@ public class FoodDataService {
         // 只做增量导入，不删除历史关系
         if (rootNode.isArray()) {
             for (JsonNode node : rootNode) {
-                        importSingleFood(node, autoEmbed);
+                importSingleFood(node, false);
             }
         } else {
-            importSingleFood(rootNode);
+            importSingleFood(rootNode, false);
         }
     }
 

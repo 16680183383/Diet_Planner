@@ -101,11 +101,6 @@ public class DefaultNeo4jMcpAdapter implements Neo4jMcpAdapter {
     }
 
     @Override
-    public List<Map<String, Object>> findSemanticSubstitutes(String foodName, int limit) {
-        return callRows("findSemanticSubstitutes", Map.of("foodName", foodName, "limit", limit));
-    }
-
-    @Override
     public List<Map<String, Object>> findPairingCandidates(String foodName, int limit) {
         return callRows("findPairingCandidates", Map.of("foodName", foodName, "limit", limit));
     }
@@ -452,6 +447,13 @@ public class DefaultNeo4jMcpAdapter implements Neo4jMcpAdapter {
                 if (result == null) {
                     throw new IllegalStateException("MCP 工具返回 null 结果: " + toolName);
                 }
+                if (log.isDebugEnabled()) {
+                    try {
+                        log.debug("MCP callTool '{}' raw content: {}", toolName, objectMapper.writeValueAsString(result.content()));
+                    } catch (Exception e) {
+                        log.debug("MCP callTool '{}' raw content toString: {}", toolName, result.content(), e);
+                    }
+                }
                 if (Boolean.TRUE.equals(result.isError())) {
                     throw new IllegalStateException("MCP 工具执行失败: " + extractText(result));
                 }
@@ -495,7 +497,14 @@ public class DefaultNeo4jMcpAdapter implements Neo4jMcpAdapter {
         if (first instanceof McpSchema.TextContent textContent) {
             return textContent.text();
         }
-        return String.valueOf(first);
+        try {
+            // 尝试将非文本的结构化内容序列化为 JSON 字符串，便于后续解析
+            return objectMapper.writeValueAsString(first);
+        } catch (Exception e) {
+            // 回退到使用 toString，避免空返回导致不必要的重试
+            log.debug("无法将 MCP 返回的首项内容序列化为 JSON，使用 toString 回退", e);
+            return String.valueOf(first);
+        }
     }
 
     private Map<String, Object> extractPayload(McpSchema.CallToolResult result) {

@@ -77,6 +77,9 @@ public class DietSearchServiceImpl implements DietSearchService, DisposableBean 
             .flatMap(List::stream)
             .collect(Collectors.toList());
         String aiAdvice;
+        if (request.isIncludeAiAdvice() && request.getUserId() == null) {
+            throw new CustomException(400, "生成 AI 建议需要传入 userId 以读取健康档案与评价信息");
+        }
         if (request.isIncludeAiAdvice() && !merged.isEmpty()) {
             UserMemoryContext memCtx = loadMemoryContext(request.getUserId());
             aiAdvice = recipeAiService.generateDietAdvice(request.getFoodName(), SearchIntent.ALL, merged, memCtx);
@@ -283,6 +286,9 @@ public class DietSearchServiceImpl implements DietSearchService, DisposableBean 
 
     @Override
     public String generateAiAdvice(String foodName, SearchIntent intent, List<DietSearchResponse> results, Long userId) {
+        if (userId == null) {
+            throw new CustomException(400, "生成 AI 建议需要传入 userId 以读取健康档案与评价信息");
+        }
         if (foodName == null || foodName.isBlank() || results == null || results.isEmpty()) {
             return null;
         }

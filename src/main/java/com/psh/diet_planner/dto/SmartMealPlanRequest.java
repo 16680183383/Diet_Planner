@@ -21,4 +21,7 @@ public class SmartMealPlanRequest {
 
     /** 当前用户 ID（可选），传入后启用记忆增强推荐 */
     private Long userId;
+
+    /** 是否使用 AI 生成建议 */
+    private boolean useAi = false;
 }
