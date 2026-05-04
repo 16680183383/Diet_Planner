@@ -1,0 +1,121 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="第 1 页" id="mQIUJZPXooZF54-3huoZ">
+    <mxGraphModel dx="4430" dy="2830" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" background="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-1" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);fontSize=28;spacingTop=3;" value="业务服务层&#xa;(DietSearchService)" vertex="1">
+          <mxGeometry height="884" width="269" x="628" y="353" as="geometry" />
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-2" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);fontSize=28;" value="RecipeAiService" vertex="1">
+          <mxGeometry height="884" width="239" x="956" y="353" as="geometry" />
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-3" parent="hMB7yfM44QC0l5VJWIxB-2" style="points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);fontSize=28;" value="" vertex="1">
+          <mxGeometry height="678" width="10" x="70" y="111" as="geometry" />
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-4" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);fontSize=28;" value="PromptGenerator" vertex="1">
+          <mxGeometry height="884" width="253" x="1307" y="353" as="geometry" />
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-5" parent="hMB7yfM44QC0l5VJWIxB-4" style="points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);fontSize=28;" value="" vertex="1">
+          <mxGeometry height="98" width="10" x="70" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-6" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);fontSize=28;" value="LlmClient" vertex="1">
+          <mxGeometry height="884" width="150" x="1610" y="353" as="geometry" />
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-7" parent="hMB7yfM44QC0l5VJWIxB-6" style="points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);fontSize=28;" value="" vertex="1">
+          <mxGeometry height="191" width="10" x="70" y="452" as="geometry" />
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-8" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);fontSize=28;" value="大语言模型&#xa;(LLM)" vertex="1">
+          <mxGeometry height="884" width="186" x="1942" y="353" as="geometry" />
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-9" parent="hMB7yfM44QC0l5VJWIxB-8" style="points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);fontSize=28;" value="" vertex="1">
+          <mxGeometry height="69" width="10" x="70" y="508" as="geometry" />
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-10" edge="1" parent="1" source="hMB7yfM44QC0l5VJWIxB-1" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;fontSize=28;spacingBottom=4;spacingTop=3;" target="hMB7yfM44QC0l5VJWIxB-3" value="1. getSmartDietAdvice(context, graphData)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="935" y="464" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-11" edge="1" parent="1" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;fontSize=28;spacingBottom=4;" target="hMB7yfM44QC0l5VJWIxB-5" value="2. buildDietPrompt(context, graphData)">
+          <mxGeometry relative="1" x="-0.0022" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1326" y="606" />
+            </Array>
+            <mxPoint x="1036" y="606" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-12" edge="1" parent="1" source="hMB7yfM44QC0l5VJWIxB-5" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;fontSize=28;spacingBottom=4;" value="3. 返回格式化的&#xa; System &amp; User Prompt">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1314" y="701" />
+            </Array>
+            <mxPoint x="1035.9999999999995" y="701" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-13" edge="1" parent="1" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;fontSize=28;spacingBottom=4;" target="hMB7yfM44QC0l5VJWIxB-7" value="4. generateStructuredData(prompt)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1413" y="805" />
+            </Array>
+            <mxPoint x="1035.9999999999995" y="805" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-14" edge="1" parent="1" source="hMB7yfM44QC0l5VJWIxB-7" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;fontSize=28;spacingBottom=4;" target="hMB7yfM44QC0l5VJWIxB-9" value="5. 发起 HTTP/REST 请求调用模型">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1848" y="861" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-15" edge="1" parent="1" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;fontSize=28;spacingBottom=4;" target="hMB7yfM44QC0l5VJWIxB-7" value="6. 返回大模型推理结果&#xa;(JSON 格式的建议与风险)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1849" y="940" />
+            </Array>
+            <mxPoint x="2052.5" y="940" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-16" edge="1" parent="1" source="hMB7yfM44QC0l5VJWIxB-7" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;fontSize=28;spacingBottom=4;" value="7. 返回原始响应对象">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1414" y="996" />
+            </Array>
+            <mxPoint x="1035.9999999999995" y="996" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-17" edge="1" parent="1" style="curved=1;endArrow=block;rounded=0;fontSize=28;spacingBottom=4;labelPosition=right;verticalLabelPosition=middle;align=left;verticalAlign=middle;" value="8. 解析组装为 AiRecommendationResponse&#xa;(分离 riskWarnings 和 overallAdvice)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1175" y="1123" />
+              <mxPoint x="1175" y="1153" />
+            </Array>
+            <mxPoint x="1035.9999999999995" y="1123" as="sourcePoint" />
+            <mxPoint x="1035.9999999999995" y="1153" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-18" edge="1" parent="1" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;fontSize=28;spacingBottom=4;" value="9. 返回标准化智能推荐响应">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="936" y="1209" />
+            </Array>
+            <mxPoint x="1025.9999999999995" y="1209" as="sourcePoint" />
+            <mxPoint x="760.1428571428569" y="1209" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-19" parent="1" style="fillColor=#E6E6E6;strokeColor=#9E916F;fontColor=light-dark(#333333,#cccccc);fontSize=28;" value="提示词 (Prompt) 工程与组装" vertex="1">
+          <mxGeometry height="48" width="1308" x="708" y="484" as="geometry" />
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-20" parent="1" style="fillColor=#E6E6E6;strokeColor=#9E916F;fontColor=light-dark(#333333,#cccccc);fontSize=28;" value="大模型交互与推理" vertex="1">
+          <mxGeometry height="48" width="1308" x="708" y="721" as="geometry" />
+        </mxCell>
+        <mxCell id="hMB7yfM44QC0l5VJWIxB-21" parent="1" style="fillColor=#E6E6E6;strokeColor=#9E916F;fontColor=light-dark(#333333,#cccccc);fontSize=28;" value="数据解析与响应封装" vertex="1">
+          <mxGeometry height="48" width="1308" x="708" y="1016" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
