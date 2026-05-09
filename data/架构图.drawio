@@ -1,0 +1,108 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="第 1 页" id="0X0Y3k6OUt3RK1DxDfH2">
+    <mxGraphModel dx="1772" dy="1132" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="O6E386wK_XfmfDMZBBCa-1" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="4. 数据与基础设施层 (Data &amp; Infrastructure Layer)" vertex="1">
+          <mxGeometry height="228" width="758" x="20" y="1356" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-2" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="3. MCP 代理层 (mcp-neo4j-server)" vertex="1">
+          <mxGeometry height="178" width="342" x="488" y="1104" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-3" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="独立图引擎服务" vertex="1">
+          <mxGeometry height="128" width="302" x="508" y="1129" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-4" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="2. 核心业务服务层 (Diet_Planner 主程序)" vertex="1">
+          <mxGeometry height="808" width="718" x="101" y="222" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-5" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="MCP 适配器" vertex="1">
+          <mxGeometry height="104" width="257" x="530" y="901" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-6" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="业务编排与 AI 融合层" vertex="1">
+          <mxGeometry height="152" width="573" x="121" y="675" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-7" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="API 接口路由层" vertex="1">
+          <mxGeometry height="152" width="250" x="295" y="449" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-8" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="网关与安全控制层" vertex="1">
+          <mxGeometry height="128" width="301" x="270" y="247" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-9" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="1. 客户端表现层 (Client Presentation Layer)" vertex="1">
+          <mxGeometry height="104" width="321" x="259" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-10" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Web 浏览器应用" vertex="1">
+          <mxGeometry height="54" width="175" x="332" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-11" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="WebSecurityConfig&#xa;JwtAuthenticationFilter" vertex="1">
+          <mxGeometry height="78" width="231" x="305" y="272" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-12" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="DietController&#xa;RecipeController&#xa;UserController" vertex="1">
+          <mxGeometry height="102" width="180" x="330" y="474" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-13" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="DietSearchServiceImpl&#xa;RecipeAiService&#xa;UserServiceImpl" vertex="1">
+          <mxGeometry height="102" width="220" x="310" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-14" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="Neo4jMcpAdapter" vertex="1">
+          <mxGeometry height="54" width="187" x="565" y="926" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-15" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="DietNeo4jToolService&#xa;CypherExecutionService" vertex="1">
+          <mxGeometry height="78" width="232" x="543" y="1154" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-16" parent="1" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="关系型数据库 (MySQL)&#xa;---&#xa;用户档案 / 评价 / 购物清单" vertex="1">
+          <mxGeometry height="134" width="211" x="55" y="1403" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-17" parent="1" style="rounded=1;arcSize=20;strokeWidth=2;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="大语言模型 API&#xa;---&#xa;膳食建议 / 风险预警生成" vertex="1">
+          <mxGeometry height="102" width="208" x="316" y="1419" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-18" parent="1" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fillColor=light-dark(#eeeeee,#1f2020);strokeColor=light-dark(#999999,#cccccc);fontColor=light-dark(#333333,#cccccc);" value="知识图谱引擎 (Neo4j)&#xa;---&#xa;食材与菜谱节点&#xa;互补/相克关系映射&#xa;图表示向量索引" vertex="1">
+          <mxGeometry height="178" width="169" x="574" y="1381" as="geometry" />
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-19" edge="1" parent="1" source="O6E386wK_XfmfDMZBBCa-11" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="O6E386wK_XfmfDMZBBCa-12" value="权限校验">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-20" edge="1" parent="1" source="O6E386wK_XfmfDMZBBCa-12" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="O6E386wK_XfmfDMZBBCa-13" value="业务分发">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-21" edge="1" parent="1" source="O6E386wK_XfmfDMZBBCa-13" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.84;entryX=0.5;entryY=0;rounded=0;" target="O6E386wK_XfmfDMZBBCa-14" value="发起图检索意图">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="659" y="827" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-22" edge="1" parent="1" source="O6E386wK_XfmfDMZBBCa-10" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="O6E386wK_XfmfDMZBBCa-11" value="HTTPS / RESTful API (携带 JWT)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-23" edge="1" parent="1" source="O6E386wK_XfmfDMZBBCa-14" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="O6E386wK_XfmfDMZBBCa-15" value="标准 MCP 协议通信解析">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-24" edge="1" parent="1" source="O6E386wK_XfmfDMZBBCa-13" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.82;entryX=0.5;entryY=0;rounded=0;" target="O6E386wK_XfmfDMZBBCa-16" value="Spring Data JPA 读写">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="161" y="827" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-25" edge="1" parent="1" source="O6E386wK_XfmfDMZBBCa-13" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="O6E386wK_XfmfDMZBBCa-17" value="上下文 Prompt 交互">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="O6E386wK_XfmfDMZBBCa-26" edge="1" parent="1" source="O6E386wK_XfmfDMZBBCa-15" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="O6E386wK_XfmfDMZBBCa-18" value="复杂 Cypher 语句执行">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
