@@ -4,71 +4,114 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-32" parent="1" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fontSize=20;" value="基准图谱字典&#xa;(food.json)" vertex="1">
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-32" parent="1" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fontSize=20;fontFamily=Times New Roman;" value="基准图谱字典&#xa;(food.json)" vertex="1">
           <mxGeometry height="98" width="111" x="95" y="269" as="geometry" />
         </mxCell>
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-33" parent="1" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fontSize=20;" value="海量食谱原始数据&#xa;(recipe.json / 1.4GB)" vertex="1">
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-33" parent="1" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fontSize=20;fontFamily=Times New Roman;" value="海量食谱原始数据&#xa;(recipe.json / 1.4GB)" vertex="1">
           <mxGeometry height="108" width="183" x="345" y="264" as="geometry" />
         </mxCell>
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-34" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;" value="构建标准食材白名单 (Set)" vertex="1">
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-34" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;fontFamily=Times New Roman;" value="构建标准食材白名单 (Set)" vertex="1">
           <mxGeometry height="54" width="252" x="24" y="422" as="geometry" />
         </mxCell>
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-35" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;" value="流式读取与结构化解析" vertex="1">
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-35" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;fontFamily=Times New Roman;" value="流式读取与结构化解析" vertex="1">
           <mxGeometry height="54" width="220" x="326" y="422" as="geometry" />
         </mxCell>
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-36" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;" value="食谱质量校验与多维清洗&#xa;1. 精确去重：基于菜谱名称消除冗余记录&#xa;2. 实体对齐：解析食材并与白名单求交集&#xa;3. 数量过滤：拦截有效食材少于 3 个的记录" vertex="1">
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-36" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;fontFamily=Times New Roman;" value="食谱质量校验与多维清洗&#xa;1. 精确去重：基于菜谱名称消除冗余记录&#xa;2. 实体对齐：解析食材并与白名单求交集&#xa;3. 数量过滤：拦截有效食材少于 3 个的记录" vertex="1">
           <mxGeometry height="198" width="260" x="163" y="526" as="geometry" />
         </mxCell>
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-37" parent="1" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=20;" value="是否通过&#xa;质量门槛?" vertex="1">
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-37" parent="1" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=20;fontFamily=Times New Roman;" value="是否通过&#xa;质量门槛?" vertex="1">
           <mxGeometry height="150" width="150" x="218" y="774" as="geometry" />
         </mxCell>
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-38" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;fixedSize=1;strokeWidth=2;whiteSpace=wrap;fontSize=20;" value="高质量图谱对齐数据&#xa;(recipe_cleaned.json)" vertex="1">
-          <mxGeometry height="63" width="246" x="20" y="998" as="geometry" />
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-38" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;fixedSize=1;strokeWidth=2;whiteSpace=wrap;fontSize=20;fontFamily=Times New Roman;" value="高质量图谱对齐数据&#xa;(recipe_cleaned.json)" vertex="1">
+          <mxGeometry height="63" width="246" x="18" y="982" as="geometry" />
         </mxCell>
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-39" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;fixedSize=1;strokeWidth=2;whiteSpace=wrap;fontSize=20;" value="异常/低质过滤日志&#xa;(recipes_removed.json)" vertex="1">
-          <mxGeometry height="63" width="254" x="316" y="998" as="geometry" />
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-39" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;fixedSize=1;strokeWidth=2;whiteSpace=wrap;fontSize=20;fontFamily=Times New Roman;" value="异常/低质过滤日志&#xa;(recipes_removed.json)" vertex="1">
+          <mxGeometry height="63" width="254" x="314" y="982" as="geometry" />
         </mxCell>
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-40" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-32" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=-0.01;rounded=0;fontSize=20;" target="OgjsQ03OlbY5T8AoPX3e-34" value="">
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-40" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-32" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=-0.01;rounded=0;fontSize=20;fontFamily=Times New Roman;" target="OgjsQ03OlbY5T8AoPX3e-34" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-41" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-33" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=-0.01;rounded=0;fontSize=20;" target="OgjsQ03OlbY5T8AoPX3e-35" value="">
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-41" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-33" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=-0.01;rounded=0;fontSize=20;fontFamily=Times New Roman;" target="OgjsQ03OlbY5T8AoPX3e-35" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-42" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-34" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=0.99;entryX=0.06;entryY=0;rounded=0;fontSize=20;" target="OgjsQ03OlbY5T8AoPX3e-36" value="">
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-42" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-34" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=0.99;entryX=0.06;entryY=0;rounded=0;fontSize=20;fontFamily=Times New Roman;" target="OgjsQ03OlbY5T8AoPX3e-36" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="150" y="501" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-43" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-35" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=0.99;entryX=0.94;entryY=0;rounded=0;fontSize=20;" target="OgjsQ03OlbY5T8AoPX3e-36" value="">
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-43" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-35" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=0.99;entryX=0.94;entryY=0;rounded=0;fontSize=20;fontFamily=Times New Roman;" target="OgjsQ03OlbY5T8AoPX3e-36" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="436" y="501" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-44" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-36" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=20;" target="OgjsQ03OlbY5T8AoPX3e-37" value="">
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-44" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-36" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=20;fontFamily=Times New Roman;" target="OgjsQ03OlbY5T8AoPX3e-37" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-45" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-37" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.87;entryX=0.5;entryY=-0.01;rounded=0;fontSize=20;" target="OgjsQ03OlbY5T8AoPX3e-38" value="是">
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-45" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-37" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.87;entryX=0.5;entryY=-0.01;rounded=0;fontSize=20;fontFamily=Times New Roman;" target="OgjsQ03OlbY5T8AoPX3e-38" value="是">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="143" y="961" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="OgjsQ03OlbY5T8AoPX3e-46" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-37" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.87;entryX=0.5;entryY=-0.01;rounded=0;fontSize=20;" target="OgjsQ03OlbY5T8AoPX3e-39" value="否">
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-46" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-37" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.87;entryX=0.5;entryY=-0.01;rounded=0;fontSize=20;fontFamily=Times New Roman;" target="OgjsQ03OlbY5T8AoPX3e-39" value="否">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="443" y="961" />
             </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-47" parent="1" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=20;" value="原始语料&#xa;(recipe_corpus_full.json)" vertex="1">
+          <mxGeometry height="110" width="215" x="358" y="1143" as="geometry" />
+        </mxCell>
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-48" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontFamily=Times New Roman;fontSize=20;fontStyle=0" value="初步去重&#xa;规则：同名食谱保留食材最多项" vertex="1">
+          <mxGeometry height="102" width="306" x="312.5" y="1282" as="geometry" />
+        </mxCell>
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-49" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontFamily=Times New Roman;fontSize=20;" value="提取原始词汇集合" vertex="1">
+          <mxGeometry height="54" width="188" x="371" y="1411" as="geometry" />
+        </mxCell>
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-50" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontFamily=Times New Roman;fontSize=20;" value="AI 批量清洗引擎&#xa;1. 提取核心名词&#xa;2. 剔除修饰词/数量/动作&#xa;3. 复杂语义归一化" vertex="1">
+          <mxGeometry height="150" width="260" x="335.5" y="1492" as="geometry" />
+        </mxCell>
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-51" parent="1" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=20;" value="映射字典缓存&#xa;(ingredient_mapping.json)" vertex="1">
+          <mxGeometry height="110" width="215" x="358" y="1669" as="geometry" />
+        </mxCell>
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-52" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;fixedSize=1;strokeWidth=2;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=20;" value="AI 清洗标准化输出&#xa;(recipe_corpus_full_ai_cleaned.json)" vertex="1">
+          <mxGeometry height="63" width="366" x="282" y="1806" as="geometry" />
+        </mxCell>
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-53" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-47" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontFamily=Times New Roman;fontSize=20;" target="OgjsQ03OlbY5T8AoPX3e-48" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-54" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-48" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0.01;rounded=0;fontFamily=Times New Roman;fontSize=20;" target="OgjsQ03OlbY5T8AoPX3e-49" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-55" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-49" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1.01;entryX=0.5;entryY=0;rounded=0;fontFamily=Times New Roman;fontSize=20;" target="OgjsQ03OlbY5T8AoPX3e-50" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-56" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-50" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontFamily=Times New Roman;fontSize=20;" target="OgjsQ03OlbY5T8AoPX3e-51" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OgjsQ03OlbY5T8AoPX3e-57" edge="1" parent="1" source="OgjsQ03OlbY5T8AoPX3e-51" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1.01;entryX=0.5;entryY=0;rounded=0;fontFamily=Times New Roman;fontSize=20;" target="OgjsQ03OlbY5T8AoPX3e-52" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
           </mxGeometry>
         </mxCell>
       </root>
